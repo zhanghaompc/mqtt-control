@@ -2,88 +2,186 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
 <title>MQTT 远程控制</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; color: #333; padding: 12px; padding-bottom: 40px; }
-  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-  .card h2 { font-size: 15px; margin-bottom: 10px; color: #222; }
-  .row { display: flex; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
-  .row label { width: 64px; font-size: 13px; color: #666; flex-shrink: 0; }
-  .row input { flex: 1; min-width: 120px; height: 34px; border: 1px solid #ddd; border-radius: 8px; padding: 0 10px; font-size: 14px; outline: none; }
-  .row input:focus { border-color: #3A7BD5; }
-  button { border: none; border-radius: 8px; padding: 8px 14px; font-size: 14px; cursor: pointer; background: #f0f3f8; color: #333; }
-  button:active { opacity: .8; }
-  button.primary { background: #3A7BD5; color: #fff; }
-  button.danger { background: #e74c3c; color: #fff; }
-  #status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #fff; }
-  #status.on { background: #07c160; }
-  #status.busy { background: #ffb800; }
-  #status.off { background: #999; }
-  .temp-wrap { display: flex; align-items: center; gap: 10px; }
-  .temp { font-size: 28px; font-weight: 600; min-width: 80px; text-align: center; }
-  .step { width: 40px; height: 34px; font-size: 20px; padding: 0; }
-  .grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-  .grid button { flex: 1; min-width: 58px; padding: 8px 0; }
-  .grid button.active { background: #3A7BD5; color: #fff; }
-  .log { background: #1d2129; border-radius: 8px; padding: 10px; max-height: 260px; overflow-y: auto; font-size: 12px; font-family: monospace; }
-  .log p { color: #9cdcfe; margin-bottom: 6px; word-break: break-all; }
-  .log p.in { color: #b5e8a1; }
-  .log p .t { color: #666; margin-right: 8px; }
-  .env { font-size: 13px; color: #888; margin-bottom: 10px; }
-  .status-text { font-size: 12px; color: #888; margin-top: 6px; word-break: break-all; }
-  .quick { display: flex; gap: 8px; margin-top: 8px; }
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --card: rgba(30, 41, 59, .72);
+    --border: rgba(148, 163, 184, .16);
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --err: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1e3a8a55, transparent 60%),
+                radial-gradient(900px 500px at 110% 10%, #0e749055, transparent 55%),
+                linear-gradient(160deg, var(--bg), #0b1220);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 12px 12px 40px;
+  }
+  header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 6px 16px;
+  }
+  header .logo {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: 0 4px 14px #38bdf855;
+  }
+  header h1 { font-size: 17px; font-weight: 700; flex: 1; }
+  header .sub { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .pill {
+    font-size: 12px; padding: 5px 12px; border-radius: 999px;
+    background: #334155; color: var(--text);
+  }
+  .pill.on { background: #065f46; color: #a7f3d0; }
+  .pill.busy { background: #78350f; color: #fde68a; }
+  .pill.off { background: #334155; color: #94a3b8; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  .card h2 {
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    letter-spacing: .05em; text-transform: uppercase;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .card h2::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: linear-gradient(var(--accent), var(--accent2)); }
+  .row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .row label { width: 60px; font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  input[type=text], input[type=number], input[type=password], select {
+    flex: 1; min-width: 110px; height: 38px;
+    background: rgba(15, 23, 42, .7);
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 14px; padding: 0 12px; outline: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #38bdf822; }
+  select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+  button {
+    border: none; border-radius: 10px; padding: 9px 14px; font-size: 14px; cursor: pointer;
+    background: #334155; color: var(--text); transition: transform .08s, opacity .2s;
+  }
+  button:active { transform: scale(.95); }
+  button.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0f172a; font-weight: 700; }
+  button.danger { background: rgba(248,113,113,.15); color: var(--err); border: 1px solid rgba(248,113,113,.3); }
+  .switch-wrap { display: flex; align-items: center; gap: 10px; }
+  .switch { position: relative; width: 52px; height: 30px; background: #334155; border-radius: 999px; transition: background .2s; cursor: pointer; flex-shrink: 0; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .2s; }
+  .switch.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .switch.on::after { left: 25px; }
+  .temp-wrap { display: flex; align-items: center; gap: 14px; }
+  .temp-val { font-size: 34px; font-weight: 800; min-width: 96px; text-align: center; background: linear-gradient(135deg, var(--accent), #e0f2fe); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .step { width: 42px; height: 42px; border-radius: 50%; font-size: 22px; background: #1e293b; border: 1px solid var(--border); }
+  .grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .grid button { flex: 1; min-width: 56px; padding: 10px 0; font-size: 13px; background: #1e293b; border: 1px solid var(--border); }
+  .grid button.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0f172a; font-weight: 700; border-color: transparent; }
+  .env { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .env b { color: var(--text); font-weight: 600; }
+  .status-text { font-size: 12px; color: var(--muted); margin-top: 8px; word-break: break-all; }
+  .quick { display: flex; gap: 8px; margin-top: 10px; }
   .quick button { flex: 1; }
+  .log {
+    background: #0b1220; border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; max-height: 300px; overflow-y: auto; font-size: 12px; font-family: ui-monospace, Consolas, monospace;
+  }
+  .log p { color: #7dd3fc; margin-bottom: 6px; word-break: break-all; line-height: 1.4; }
+  .log p.in { color: #86efac; }
+  .log p .t { color: #475569; margin-right: 8px; }
+  .state-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .state-list div { background: #1e293b; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .state-list .k { font-size: 11px; color: var(--muted); }
+  .state-list .v { font-size: 15px; font-weight: 700; margin-top: 3px; }
 </style>
 </head>
 <body>
+  <header>
+    <div class="logo">❄</div>
+    <div>
+      <h1>MQTT 远程控制</h1>
+      <div class="sub">ESP32 空调 / 智能设备</div>
+    </div>
+    <span id="status" class="pill off">未连接</span>
+  </header>
+
   <div class="card">
-    <h2>MQTT 连接</h2>
+    <h2>连接配置</h2>
     <div class="row"><label>服务器</label><input id="host" placeholder="broker-cn.emqx.io"></div>
     <div class="row">
       <label>端口</label><input id="port" type="number" placeholder="8084">
-      <label style="width:auto">加密</label><input id="tls" type="checkbox" checked>
+      <label style="width:auto">加密</label>
+      <div class="switch" id="tlsSwitch" onclick="toggleTls()"><span style="display:none"></span></div>
     </div>
     <div class="row"><label>路径</label><input id="path" placeholder="/mqtt"></div>
-    <div class="row"><label>用户名</label><input id="username" placeholder="留空=匿名"></div>
-    <div class="row"><label>密码</label><input id="password" type="password" placeholder="留空=匿名"></div>
+    <div class="row"><label>用户名</label><input id="username" placeholder="留空 = 匿名"></div>
+    <div class="row"><label>密码</label><input id="password" type="password" placeholder="留空 = 匿名"></div>
     <div class="row"><label>主题</label><input id="topic" placeholder="ac/esp32ac"></div>
     <div class="row">
-      <span id="status" class="off">未连接</span>
-      <button id="btnConnect" class="primary">连接</button>
-      <button id="btnDisconnect" class="danger">断开</button>
+      <button id="btnConnect" class="primary" style="flex:1">连接</button>
+      <button id="btnDisconnect" class="danger" style="flex:1">断开</button>
     </div>
   </div>
 
   <div class="card">
     <h2>空调控制</h2>
-    <div class="env" id="env">--</div>
+    <div class="env" id="env">等待状态…</div>
     <div class="row">
       <label>电源</label>
-      <label style="width:auto"><input type="checkbox" id="power"> 开</label>
+      <div class="switch-wrap">
+        <div class="switch" id="powerSwitch" onclick="togglePower()"></div>
+        <span id="powerText" style="font-size:14px">关</span>
+      </div>
     </div>
     <div class="row">
       <label>温度</label>
       <div class="temp-wrap">
-        <button class="step" id="tempMinus">−</button>
-        <span class="temp" id="temp">26°C</span>
-        <button class="step" id="tempPlus">+</button>
+        <button class="step" onclick="tempStep(-1)">−</button>
+        <span class="temp-val" id="tempVal">26°C</span>
+        <button class="step" onclick="tempStep(1)">+</button>
       </div>
     </div>
     <div class="grid" id="modeGrid"></div>
     <div class="grid" id="speedGrid"></div>
+    <div class="row">
+      <label>协议</label>
+      <select id="protocolSel"><option value="">选择协议…</option></select>
+    </div>
     <div class="status-text" id="pows"></div>
   </div>
 
   <div class="card">
-    <h2>通用发布（任意设备）</h2>
+    <h2>当前状态</h2>
+    <div class="state-list">
+      <div><div class="k">电源</div><div class="v" id="stPower">--</div></div>
+      <div><div class="k">模式</div><div class="v" id="stMode">--</div></div>
+      <div><div class="k">风速</div><div class="v" id="stSpeed">--</div></div>
+      <div><div class="k">协议</div><div class="v" id="stProtocol">--</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>通用发布</h2>
     <div class="row"><label>主题</label><input id="pubTopic" placeholder="topic/in"></div>
-    <div class="row"><label>内容</label><input id="pubPayload" placeholder="发送 JSON 或文本"></div>
+    <div class="row"><label>内容</label><input id="pubPayload" placeholder="JSON 或文本"></div>
     <div class="quick">
-      <button id="plugOn">插座开</button>
-      <button id="plugOff">插座关</button>
-      <button id="pubSend" class="primary">发送</button>
+      <button onclick="quickPlug('1')">插座开</button>
+      <button onclick="quickPlug('0')">插座关</button>
+      <button class="primary" onclick="pubSend()">发送</button>
     </div>
   </div>
 
@@ -96,76 +194,69 @@
 <script>
 const MODES = ["自动", "制冷", "制热", "除湿", "送风"];
 const SPEEDS = ["自动", "低速", "中速", "强劲"];
+const PROTOCOLS = ["AC","AMCOR","AIRWELL","AIRTON","ARGO","ARRIS","BOSE","BOSCH144","CARRIER_AC","CARRIER_AC40","CARRIER_AC64","CARRIER_AC84","CARRIER_AC128","CLIMABUTLER","COOLIX","COOLIX48","CORONA_AC","DAIKIN","DAIKIN2","DAIKIN64","DAIKIN128","DAIKIN152","DAIKIN160","DAIKIN176","DAIKIN200","DAIKIN216","DAIKIN312","DENON","DELONGHI_AC","DISH","DOSHISHA","ELECTRA_AC","EPSON","ECOCLIM","ELITESCREENS","GICABLE","GLOBALCACHE","GREE","GOODWEATHER","GORENJE","HAIER_AC","HAIER_AC160","HAIER_AC176","HAIER_AC_YRW02","HITACHI_AC","HITACHI_AC1","HITACHI_AC2","HITACHI_AC3","HITACHI_AC264","HITACHI_AC296","HITACHI_AC344","HITACHI_AC424","INAX","JVC","KELON","KELON168","KELVINATOR","LASERTAG","LEGOPF","LG","LG2","LUTRON","MAGIQUEST","MIDEA","MIDEA24","METZ","MIRAGE","MITSUBISHI","MITSUBISHI2","MITSUBISHI112","MITSUBISHI136","MITSUBISHI_AC","MITSUBISHI_HEAVY_88","MITSUBISHI_HEAVY_152","MULTIBRACKETS","MWM","NEC","NEC_LIKE","NEOCLIMA","NIKAI","PANASONIC","PANASONIC_AC","PANASONIC_AC32","PIONEER","PRONTO","RAW","RC5","RC5X","RC6","RCMM","RHOSS","SAMSUNG","SAMSUNG36","SAMSUNG_AC","SANYO","SANYO_AC","SANYO_AC88","SANYO_AC152","SANYO_LC7461","SAR","SHARP","SHARP_AC","SHERWOOD","SONY","SONY_38K","SYMPHONY","TECHNIBEL_AC","TECO","TEKNOPOINT","TCL96AC","TCL112AC","TOSHIBA_AC","TOTO","TRANSCOLD","TRUMA","TROTEC","TROTEC_3550","UNKNOWN","UNUSED","VESTEL_AC","VOLTAS","WHIRLPOOL_AC","WHYNTER","WOWWEE","XMP","YORK","ZEPEAL"];
 
 let client = null;
 let temp = 26, modeIndex = 1, speedIndex = 2, powerOn = false;
-
-const cfg = {
-  host: "broker-cn.emqx.io", port: 8084, path: "/mqtt", tls: true,
-  username: "", password: "", topic: "ac/esp32ac"
-};
+let protocolName = "";
+let cfg = { host: "broker-cn.emqx.io", port: 8084, path: "/mqtt", tls: true, username: "", password: "", topic: "ac/esp32ac" };
 
 const $ = id => document.getElementById(id);
 
 function loadCfg() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("mqtt_cfg_web") || "{}");
-    Object.assign(cfg, saved);
-  } catch (e) {}
+  try { Object.assign(cfg, JSON.parse(localStorage.getItem("mqtt_cfg_web") || "{}")); } catch (e) {}
   $("host").value = cfg.host;
   $("port").value = cfg.port;
   $("path").value = cfg.path;
-  $("tls").checked = cfg.tls;
+  $("tlsSwitch").className = "switch" + (cfg.tls ? " on" : "");
   $("username").value = cfg.username;
   $("password").value = cfg.password;
   $("topic").value = cfg.topic;
   $("pubTopic").value = cfg.topic + "/in";
 }
-
 function saveCfg() {
   cfg.host = $("host").value.trim() || "broker-cn.emqx.io";
   cfg.port = parseInt($("port").value) || 8084;
   cfg.path = $("path").value.trim() || "/mqtt";
-  cfg.tls = $("tls").checked;
   cfg.username = $("username").value.trim();
   cfg.password = $("password").value;
   cfg.topic = $("topic").value.trim() || "ac/esp32ac";
   localStorage.setItem("mqtt_cfg_web", JSON.stringify(cfg));
   $("pubTopic").value = cfg.topic + "/in";
 }
-
+function toggleTls() {
+  cfg.tls = !cfg.tls;
+  $("tlsSwitch").className = "switch" + (cfg.tls ? " on" : "");
+  saveCfg();
+}
 function setStatus(text, cls) {
   const s = $("status");
   s.textContent = text;
-  s.className = cls;
+  s.className = "pill " + cls;
 }
-
 function log(msg, incoming) {
   const p = document.createElement("p");
   if (incoming) p.className = "in";
   const now = new Date().toTimeString().slice(0, 8);
   const t = document.createElement("span");
-  t.className = "t";
-  t.textContent = now;
+  t.className = "t"; t.textContent = now;
   p.appendChild(t);
   p.appendChild(document.createTextNode(msg));
   const box = $("log");
   box.insertBefore(p, box.firstChild);
   while (box.children.length > 100) box.removeChild(box.lastChild);
 }
-
 function buildUrl() {
-  const proto = cfg.tls ? "wss" : "ws";
-  return proto + "://" + cfg.host + ":" + cfg.port + (cfg.path || "/mqtt");
+  return (cfg.tls ? "wss" : "ws") + "://" + cfg.host + ":" + cfg.port + (cfg.path || "/mqtt");
 }
-
 function renderControls() {
-  $("temp").textContent = temp + "°C";
-  $("power").checked = powerOn;
+  $("tempVal").textContent = temp + "°C";
+  $("powerSwitch").className = "switch" + (powerOn ? " on" : "");
+  $("powerText").textContent = powerOn ? "开" : "关";
   document.querySelectorAll("#modeGrid button").forEach((b, i) => b.className = i === modeIndex ? "active" : "");
   document.querySelectorAll("#speedGrid button").forEach((b, i) => b.className = i === speedIndex ? "active" : "");
+  if (protocolName) $("protocolSel").value = protocolName;
 }
-
 function parseStatus(msg) {
   if (msg.indexOf("{") === 0) {
     try {
@@ -175,8 +266,13 @@ function parseStatus(msg) {
       if (j.power !== undefined) powerOn = !!j.power;
       if (j.mode >= 0 && j.mode < MODES.length) modeIndex = j.mode;
       if (j.speed >= 0 && j.speed < SPEEDS.length) speedIndex = j.speed;
-      $("env").textContent = "温度 " + (j.temp !== undefined ? Number(j.temp).toFixed(1) : "--") + "℃ / 湿度 " +
-        (j.humidity !== undefined ? Number(j.humidity).toFixed(1) : "--") + "%";
+      if (j.protocol) protocolName = j.protocol;
+      $("env").innerHTML = "温度 <b>" + (j.temp !== undefined ? Number(j.temp).toFixed(1) : "--") + "℃</b> · 湿度 <b>" +
+        (j.humidity !== undefined ? Number(j.humidity).toFixed(1) : "--") + "%</b>";
+      $("stPower").textContent = powerOn ? "开" : "关";
+      $("stMode").textContent = MODES[modeIndex] || "--";
+      $("stSpeed").textContent = SPEEDS[speedIndex] || "--";
+      $("stProtocol").textContent = protocolName || "--";
       if (j.pows) $("pows").textContent = j.pows;
       renderControls();
     } catch (e) {}
@@ -190,16 +286,18 @@ function parseStatus(msg) {
     const p = msg.match(/power=(on|off)/);
     if (p) powerOn = p[1] === "on";
     renderControls();
+  } else if (msg.indexOf("protocol=") === 0) {
+    protocolName = msg.substring(9);
+    $("stProtocol").textContent = protocolName;
+    renderControls();
   }
 }
-
 function send(cmd) {
   if (!client || !client.connected) { alert("请先连接"); return; }
   const topic = cfg.topic + "/in";
   client.publish(topic, cmd);
   log(topic + " : " + cmd);
 }
-
 function connect() {
   saveCfg();
   if (client) { try { client.end(true); } catch (e) {} }
@@ -225,43 +323,58 @@ function connect() {
   client.on("close", () => { setStatus("未连接", "off"); log("连接已断开"); });
   client.on("error", e => { setStatus("错误", "off"); log("错误: " + ((e && e.message) || e)); });
 }
-
 function disconnect() {
   if (client) { try { client.end(true); } catch (e) {} client = null; }
   setStatus("未连接", "off");
+}
+function togglePower() {
+  powerOn = !powerOn;
+  renderControls();
+  send(powerOn ? "temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on" : "power=off");
+}
+function tempStep(d) {
+  temp = Math.min(30, Math.max(16, temp + d));
+  renderControls();
+  send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on");
+}
+function pubSend() {
+  if (!client || !client.connected) { alert("请先连接"); return; }
+  const topic = $("pubTopic").value.trim() || (cfg.topic + "/in");
+  client.publish(topic, $("pubPayload").value);
+  log(topic + " : " + $("pubPayload").value);
+}
+function quickPlug(v) {
+  $("pubPayload").value = '{"m":"on","v":"' + v + '"}';
+  pubSend();
 }
 
 // 初始化
 MODES.forEach((m, i) => {
   const b = document.createElement("button");
   b.textContent = m;
-  b.onclick = () => { modeIndex = i; send("temp=" + temp + ";mode=" + i + ";speed=" + speedIndex + ";power=on"); renderControls(); };
+  b.onclick = () => { modeIndex = i; renderControls(); send("temp=" + temp + ";mode=" + i + ";speed=" + speedIndex + ";power=on"); };
   $("modeGrid").appendChild(b);
 });
 SPEEDS.forEach((s, i) => {
   const b = document.createElement("button");
   b.textContent = s;
-  b.onclick = () => { speedIndex = i; send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + i + ";power=on"); renderControls(); };
+  b.onclick = () => { speedIndex = i; renderControls(); send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + i + ";power=on"); };
   $("speedGrid").appendChild(b);
 });
+PROTOCOLS.forEach(p => {
+  const o = document.createElement("option");
+  o.value = p; o.textContent = p;
+  $("protocolSel").appendChild(o);
+});
+$("protocolSel").onchange = () => {
+  const v = $("protocolSel").value;
+  if (!v) return;
+  protocolName = v;
+  send("protocol=" + v);
+};
 
 $("btnConnect").onclick = connect;
 $("btnDisconnect").onclick = disconnect;
-$("power").onchange = () => {
-  powerOn = $("power").checked;
-  send(powerOn ? "temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on" : "power=off");
-};
-$("tempMinus").onclick = () => { temp = Math.max(16, temp - 1); renderControls(); send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on"); };
-$("tempPlus").onclick = () => { temp = Math.min(30, temp + 1); renderControls(); send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on"); };
-$("pubSend").onclick = () => {
-  if (!client || !client.connected) { alert("请先连接"); return; }
-  const topic = $("pubTopic").value.trim() || (cfg.topic + "/in");
-  client.publish(topic, $("pubPayload").value);
-  log(topic + " : " + $("pubPayload").value);
-};
-$("plugOn").onclick = () => { $("pubPayload").value = '{"m":"on","v":"1"}'; $("pubSend").click(); };
-$("plugOff").onclick = () => { $("pubPayload").value = '{"m":"on","v":"0"}'; $("pubSend").click(); };
-
 loadCfg();
 renderControls();
 </script>
