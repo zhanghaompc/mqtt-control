@@ -83,7 +83,7 @@
       }
     }
 
-    /* ===== 控件禁用状态（通过父容器类控制） ===== */
+    /* ===== 控件禁用状态 ===== */
     .controls-disabled .control-action,
     .controls-disabled .switch,
     .controls-disabled .temp-btn,
@@ -849,7 +849,8 @@
         <span id="devStatus" class="pill off">设备离线</span>
       </header>
 
-      <details class="fold" open>
+      <!-- 连接配置：id="connectDetails"，由 JS 动态控制 open 属性 -->
+      <details class="fold" id="connectDetails">
         <summary>连接配置 <span class="chev">▾</span></summary>
         <div class="fold-body">
           <div class="row"><label>服务器</label><input id="host" placeholder="broker-cn.emqx.io"></div>
@@ -871,7 +872,7 @@
         </div>
       </details>
 
-      <!-- 所有控制按钮都加上 class="control-action" 以便统一禁用 -->
+      <!-- 所有控制按钮加上 class="control-action" -->
       <div class="card" id="controlCard">
         <div class="card-heading">
           <h2>空调控制</h2>
@@ -1052,7 +1053,7 @@
       pendingFw = null,
       pendingUpdateCheck = false,
       learnClearTimer = 0;
-    let isConnected = false; // 新增：MQTT连接状态
+    let isConnected = false;
 
     const $ = id => document.getElementById(id);
     const DEVICE_STATUS_TOPIC = () => cfg.topic + "/status";
@@ -1093,7 +1094,7 @@
     }());
 
     // ============================================================
-    //  控件禁用/启用（核心新增）
+    //  控件禁用/启用
     // ============================================================
     function updateControlsEnabled(enabled) {
       const controlPage = document.getElementById('controlPage');
@@ -1740,7 +1741,7 @@
     };
 
     // ============================================================
-    //  MQTT 连接 / 断开（核心修改：增加自动重连标志和控件禁用）
+    //  MQTT 连接 / 断开
     // ============================================================
     function connect() {
       saveCfg();
@@ -1765,7 +1766,7 @@
         brokerConnectTime = Date.now();
         setDevStatus("检测中…", "busy");
         log("已连接");
-        // 保存自动重连标志
+        // 保存自动重连标志（同时用于控制配置展开状态）
         localStorage.setItem('mqtt_auto_connect', 'true');
         client.subscribe(DEVICE_STATUS_TOPIC(), { qos: 0 });
         client.subscribe(DEVICE_OUT_TOPIC(), { qos: 0 });
@@ -1786,8 +1787,6 @@
         setStatus("未连接", "off");
         setDeviceOnline(false);
         log("连接已断开");
-        // 若没有主动断开，清除自动重连标志（但保留配置）
-        // 但这里不自动清除，由 disconnect 主动清除
       });
       client.on("error", e => {
         isConnected = false;
@@ -1803,8 +1802,35 @@
       updateControlsEnabled(false);
       setStatus("未连接", "off");
       setDeviceOnline(false);
-      // 清除自动重连标志，下次不会自动连接
+      // 清除自动重连标志，下次不会自动连接，且配置会重新展开
       localStorage.removeItem('mqtt_auto_connect');
+      // 同时折叠配置（用户断开后，下次打开可重新配置）
+      $('connectDetails').removeAttribute('open');
+    }
+
+    // ============================================================
+    //  页面初始化：根据标志控制配置展开状态
+    // ============================================================
+    function initConnectDetails() {
+      const details = $('connectDetails');
+      if (!details) return;
+      const hasConnected = localStorage.getItem('mqtt_auto_connect') === 'true';
+      if (hasConnected) {
+        details.removeAttribute('open'); // 曾经连接过，折叠
+      } else {
+        details.setAttribute('open', 'open'); // 从未连接，展开
+      }
+    }
+
+    // ============================================================
+    //  自动重连（仅在标志存在时尝试）
+    // ============================================================
+    function autoConnectIfNeeded() {
+      if (localStorage.getItem('mqtt_auto_connect') === 'true') {
+        if (!client || !client.connected) {
+          connect();
+        }
+      }
     }
 
     // ============================================================
@@ -1851,23 +1877,17 @@
     $("topic").onchange = selectHistoryTopic;
 
     // ============================================================
-    //  页面加载后自动重连（检查 localStorage）
+    //  加载完成
     // ============================================================
-    function autoConnectIfNeeded() {
-      if (localStorage.getItem('mqtt_auto_connect') === 'true') {
-        // 但也要检查是否已有连接，避免重复
-        if (!client || !client.connected) {
-          connect();
-        }
-      }
-    }
-
     loadCfg();
     renderControls();
     renderEnv();
-    // 默认禁用控件（未连接）
-    updateControlsEnabled(false);
-    // 尝试自动连接
+    updateControlsEnabled(false); // 初始禁用
+
+    // 先控制配置展开状态
+    initConnectDetails();
+
+    // 再尝试自动重连（若标志存在）
     autoConnectIfNeeded();
   </script>
 </body>
