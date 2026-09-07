@@ -612,18 +612,18 @@
     .page {
       width: 50%;
       flex: 0 0 50%;
-      padding-right: 32px;
+      /* 页面宽度严格等于视口，不额外预留空白，避免切页后右侧露缝 */
+      padding-right: 0;
     }
 
     .timer-page {
       order: 1;
-      padding-right: 16px;
-      padding-left: 16px;
+      padding-left: 0;
     }
 
     #controlPage {
       order: 0;
-      padding-left: 16px;
+      padding-left: 0;
     }
 
     .page-title {
