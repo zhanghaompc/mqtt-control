@@ -646,7 +646,9 @@
     }
 
     header .title-line { display: flex; align-items: center; gap: 10px; }
-    header .title-line button { padding: 5px 10px; font-size: 13px; color: var(--accent); background: var(--accent-soft); }
+    .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .card-heading h2 { margin-bottom: 18px; }
+    .card-heading button { padding: 6px 11px; font-size: 13px; color: var(--accent); background: var(--accent-soft); margin-bottom: 18px; }
 
     .timer-empty {
       text-align: center;
@@ -724,7 +726,7 @@
   <header>
     <div class="logo">❄</div>
     <div>
-      <div class="title-line"><h1>空调控制</h1><button type="button" onclick="showTimerPage()" title="向右滑进入定时任务">定时</button></div>
+      <h1>空调控制</h1>
       <div class="sub">ESP8266/32 · MQTT 远程</div>
     </div>
     <div class="spacer"></div>
@@ -750,7 +752,7 @@
     </div>
   </details>
   <div class="card">
-    <h2>空调控制</h2>
+    <div class="card-heading"><h2>空调控制</h2><button type="button" onclick="showTimerPage()" title="向右滑进入定时任务">定时 →</button></div>
     <!-- 电源挪到最上面 -->
     <div class="power-row">
       <div class="label">电源<small>点击开关空调</small></div>
