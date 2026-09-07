@@ -595,7 +595,7 @@
       margin-right: 10px;
     }
 
-    /* 横向分页：控制页在右侧，向右滑可进入定时页 */
+    /* 横向分页：控制页在左侧，向右滑可进入定时页 */
     body {
       overflow-x: hidden;
     }
@@ -603,7 +603,7 @@
     .pager {
       display: flex;
       width: 200%;
-      transform: translateX(-50%);
+      transform: translateX(0);
       transition: transform .32s var(--ease);
       touch-action: pan-y;
       will-change: transform;
@@ -616,13 +616,13 @@
     }
 
     .timer-page {
-      order: 0;
+      order: 1;
       padding-right: 16px;
       padding-left: 16px;
     }
 
     #controlPage {
-      order: 1;
+      order: 0;
       padding-left: 16px;
     }
 
@@ -644,6 +644,9 @@
       color: var(--accent);
       background: var(--accent-soft);
     }
+
+    header .title-line { display: flex; align-items: center; gap: 10px; }
+    header .title-line button { padding: 5px 10px; font-size: 13px; color: var(--accent); background: var(--accent-soft); }
 
     .timer-empty {
       text-align: center;
@@ -696,7 +699,7 @@
       <div class="page-title">
         <div class="logo">⏰</div>
         <h1>定时任务</h1>
-        <button type="button" onclick="showControlPage()">空调控制 →</button>
+        <button type="button" onclick="showControlPage()">← 空调控制</button>
       </div>
       <div class="card timer-form">
         <h2>添加定时</h2>
@@ -721,13 +724,12 @@
   <header>
     <div class="logo">❄</div>
     <div>
-      <h1>空调控制</h1>
+      <div class="title-line"><h1>空调控制</h1><button type="button" onclick="showTimerPage()" title="向右滑进入定时任务">定时</button></div>
       <div class="sub">ESP8266/32 · MQTT 远程</div>
     </div>
     <div class="spacer"></div>
     <span id="status" class="pill off">未连接</span>
     <span id="devStatus" class="pill off">设备离线</span>
-    <button type="button" onclick="showTimerPage()" style="padding:8px 10px;color:var(--accent);background:var(--accent-soft)" title="右滑进入定时任务">定时</button>
   </header>
   <!-- 增加 open 属性，页面加载自动展开连接配置 -->
   <details class="fold" open>
@@ -882,12 +884,12 @@
 
     function showTimerPage() {
       currentPage = "timer";
-      $("pager").style.transform = "translateX(0)";
+      $("pager").style.transform = "translateX(-50%)";
       loadTimers();
     }
     function showControlPage() {
       currentPage = "control";
-      $("pager").style.transform = "translateX(-50%)";
+      $("pager").style.transform = "translateX(0)";
     }
     function timerModeName(v) { return MODES[Number(v)] || "模式 " + v; }
     function timerSpeedName(v) { return SPEEDS[Number(v)] || "风速 " + v; }
