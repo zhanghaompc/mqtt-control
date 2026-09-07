@@ -1,0 +1,6 @@
+{
+  "version": "1.0.16",
+  "url": {
+    "esp8266": "https://github.com/zhanghaompc/ESP8266-AC-HomeKit/releases/download/v1.0.16/esp8266_wifi.bin"
+  }
+}
