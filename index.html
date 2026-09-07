@@ -824,12 +824,15 @@
   </div>
 
   <details class="fold">
-    <summary>通用发布 <span class="chev">▾</span></summary>
+    <summary>设备恢复 <span class="chev">▾</span></summary>
     <div class="fold-body">
-      <div class="row"><label>主题</label><input id="pubTopic" placeholder="topic/in"></div>
-      <div class="row"><label>内容</label><input id="pubPayload" placeholder="JSON 或文本"></div>
-      <div class="quick"><button onclick="quickPlug('1')">插座开</button><button
-          onclick="quickPlug('0')">插座关</button><button class="primary" onclick="pubSend()">发送</button></div>
+      <div class="status-text" style="margin:0 0 14px">用于重新配置网络，或将设备恢复到初始状态。</div>
+      <div class="quick">
+        <button type="button" onclick="reconfigureDevice()">重新配网</button>
+        <button type="button" class="danger" onclick="resetFactoryFromPage()">恢复出厂设置</button>
+      </div>
+      <div class="status-text" id="recoveryStatus"></div>
+      <div class="timer-note">重新配网会清除 Wi‑Fi 配置并打开设备热点，不会删除 HomeKit 配对和定时任务。恢复出厂设置会清除 Wi‑Fi、HomeKit 配对、定时任务和协议配置，并重启设备。</div>
     </div>
   </details>
   <details class="fold">
@@ -907,7 +910,22 @@
           '<div class="timer-actions"><div class="switch timer-switch ' + (t.enabled ? 'on' : '') + '" title="启用/停用" onclick="toggleTimer(' + t.id + ',' + (t.enabled ? 'false' : 'true') + ')"></div><button class="danger" onclick="deleteTimer(' + t.id + ')">删除</button></div></div>';
       }).join("");
     }
+    function setRecoveryStatus(text, color) { const el = $("recoveryStatus"); if (el) { el.textContent = text || ""; el.style.color = color || "var(--muted)"; } }
+    function reconfigureDevice() {
+      if (!client || !client.connected) { setRecoveryStatus("请先连接 MQTT", "var(--warn)"); return; }
+      if (!confirm("将清除当前 Wi‑Fi 配置并打开配网热点，是否继续？")) return;
+      setRecoveryStatus("正在请求重新配网…", "var(--warn)");
+      send("wifi_config");
+    }
+    function resetFactoryFromPage() {
+      if (!client || !client.connected) { setRecoveryStatus("请先连接 MQTT", "var(--warn)"); return; }
+      if (!confirm("恢复出厂设置会清除 Wi‑Fi、HomeKit 配对、定时任务和协议配置，并重启设备。确定继续吗？")) return;
+      setRecoveryStatus("正在请求恢复出厂设置…", "var(--warn)");
+      send("reset_factory");
+    }
     function parseTimerResponse(msg) {
+      if (msg === "wifi_config=ok") { setRecoveryStatus("已进入重新配网模式，请连接设备热点完成配置。", "var(--ok)"); return; }
+      if (msg === "reset=ok") { setRecoveryStatus("已开始恢复出厂设置，设备即将重启。", "var(--ok)"); return; }
       if (msg.indexOf("timers=") === 0) {
         try { timerItems = JSON.parse(msg.substring(7)); renderTimers(); timerStatus("已更新任务列表"); } catch (e) { timerStatus("任务列表解析失败", "var(--err)"); }
       } else if (msg.indexOf("timer_add=success") === 0) { timerStatus("定时任务已添加", "var(--ok)"); loadTimers(); }
@@ -960,7 +978,7 @@
     function rememberTopic() { const raw = $("topic").value.trim(); if (!raw) return; applyDevType(); saveCfg(); const topic = $("topic").value.trim(); let h = topicHistory().filter(function (x) { return x.topic !== topic; }); h.unshift({ topic: topic, devType: $("devType").value, host: cfg.host, port: cfg.port, path: cfg.path, tls: cfg.tls }); localStorage.setItem("mqtt_topic_history", JSON.stringify(h.slice(0, 30))); renderTopicHistory(); }
     function selectHistoryTopic() { const topic = $("topic").value.trim(); const x = topicHistory().find(function (item) { return item.topic === topic; }); if (!x) return; $("devType").value = x.devType || "esp32"; if (x.host) { $("host").value = x.host; cfg.host = x.host; } if (x.port) { $("port").value = x.port; cfg.port = x.port; } if (x.path) { $("path").value = x.path; cfg.path = x.path; } if (typeof x.tls === "boolean") { cfg.tls = x.tls; $("tlsSwitch").className = "switch" + (cfg.tls ? " on" : ""); } applyDevType(); saveCfg(); }
     function loadCfg() { try { Object.assign(cfg, JSON.parse(localStorage.getItem("mqtt_cfg_web") || "{}")); } catch (e) { } $("host").value = cfg.host; $("port").value = cfg.port; $("path").value = cfg.path; $("tlsSwitch").className = "switch" + (cfg.tls ? " on" : ""); $("username").value = cfg.username; $("password").value = cfg.password; $("topic").value = cfg.topic; $("devType").value = cfg.devType || "esp32"; applyDevType(); saveCfg(); renderTopicHistory(); }
-    function saveCfg() { cfg.host = $("host").value.trim() || "broker-cn.emqx.io"; cfg.port = parseInt($("port").value) || 8084; cfg.path = $("path").value.trim() || "/mqtt"; cfg.username = $("username").value.trim(); cfg.password = $("password").value; cfg.topic = $("topic").value.trim() || (($("devType").value === "esp8266") ? "ac/esp8266/xxxx" : "ac/esp32/xxxx"); cfg.devType = $("devType").value; localStorage.setItem("mqtt_cfg_web", JSON.stringify(cfg)); $("pubTopic").value = cfg.topic + "/in"; }
+    function saveCfg() { cfg.host = $("host").value.trim() || "broker-cn.emqx.io"; cfg.port = parseInt($("port").value) || 8084; cfg.path = $("path").value.trim() || "/mqtt"; cfg.username = $("username").value.trim(); cfg.password = $("password").value; cfg.topic = $("topic").value.trim() || (($("devType").value === "esp8266") ? "ac/esp8266/xxxx" : "ac/esp32/xxxx"); cfg.devType = $("devType").value; localStorage.setItem("mqtt_cfg_web", JSON.stringify(cfg)); }
     function toggleTls() { cfg.tls = !cfg.tls; $("tlsSwitch").className = "switch" + (cfg.tls ? " on" : ""); saveCfg(); }
     function topicSuffix(topic) { const ps = ["ac/esp32ac", "ac/esp8266ac", "ac/esp32/", "ac/esp8266/", "ac/esp32", "ac/esp8266"]; for (let i = 0; i < ps.length; i++) { if (topic.indexOf(ps[i]) === 0) return topic.substring(ps[i].length).trim(); } return ""; }
     function applyDevType() { const t = $("devType").value; const p = (t === "esp8266") ? "ac/esp8266/" : "ac/esp32/"; const cur = $("topic").value.trim(); if (cur.indexOf("ac/esp32") === 0 || cur.indexOf("ac/esp8266") === 0) { const suffix = topicSuffix(cur); $("topic").value = suffix ? p + suffix : p + "xxxx"; } $("topic").placeholder = p + "xxxx"; }
@@ -1067,8 +1085,6 @@
     function disconnect() { if (client) { try { client.end(true); } catch (e) { } client = null; } setStatus("未连接", "off"); setDeviceOnline(false); }
     function togglePower() { powerOn = !powerOn; renderControls(); send(powerOn ? "temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on" : "power=off"); }
     function tempStep(d) { temp = Math.min(30, Math.max(16, temp + d)); renderControls(); send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on"); }
-    function pubSend() { if (!client || !client.connected) { alert("请先连接"); return; } const topic = $("pubTopic").value.trim() || (cfg.topic + "/in"); client.publish(topic, $("pubPayload").value); log(topic + " : " + $("pubPayload").value); }
-    function quickPlug(v) { $("pubPayload").value = '{"m":"on","v":"' + v + '"}'; pubSend(); }
     MODES.forEach((m, i) => { const b = document.createElement("button"); b.textContent = m; b.onclick = () => { modeIndex = i; renderControls(); send("temp=" + temp + ";mode=" + i + ";speed=" + speedIndex + ";power=on"); }; $("modeGrid").appendChild(b); });
     SPEEDS.forEach((s, i) => { const b = document.createElement("button"); b.textContent = s; b.onclick = () => { speedIndex = i; renderControls(); send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + i + ";power=on"); }; $("speedGrid").appendChild(b); });
     PROTOCOLS.forEach(p => { const o = document.createElement("option"); o.value = p; o.textContent = PROTOCOL_CN[p] ? PROTOCOL_CN[p] + " (" + p + ")" : p; $("protocolSel").appendChild(o); });
