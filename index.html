@@ -71,6 +71,78 @@
       display: block;
     }
 
+    /* MQTT 首次打开/自动重连时的连接中页面 */
+    .connecting-view {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(242, 242, 247, .68);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+
+    .connecting-view.show {
+      display: flex;
+    }
+
+    .connecting-card {
+      width: min(400px, 100%);
+      padding: 30px 22px;
+      text-align: center;
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid rgba(229, 229, 234, .9);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, .12);
+    }
+
+    .connecting-spinner {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 20px;
+      border: 5px solid #dbeafe;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: connectingSpin 1s linear infinite;
+    }
+
+    @keyframes connectingSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .connecting-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .connecting-hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .connection-notice {
+      display: none;
+      margin: -10px 4px 16px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: rgba(255, 59, 48, .1);
+      color: #c62828;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .connection-notice.show {
+      display: block;
+    }
+
     @keyframes pageFadeIn {
       0% {
         opacity: 0;
@@ -834,6 +906,14 @@
 
 <body>
 
+  <div id="connectingView" class="connecting-view" aria-live="polite">
+    <div class="connecting-card">
+      <div class="connecting-spinner"></div>
+      <div class="connecting-title">正在连接 MQTT…</div>
+      <div class="connecting-hint">正在恢复 MQTT 连接，请稍候<br>连接成功后将自动恢复控制</div>
+    </div>
+  </div>
+
   <div class="page-container">
 
     <!-- ==================== 控制页 ==================== -->
@@ -848,6 +928,8 @@
         <span id="status" class="pill off">未连接</span>
         <span id="devStatus" class="pill off">设备离线</span>
       </header>
+
+      <div id="connectionNotice" class="connection-notice" role="alert">连接失败，请手动连接并检查设备状态和主题</div>
 
       <!-- 连接配置：id="connectDetails"，由 JS 动态控制 open 属性 -->
       <details class="fold" id="connectDetails">
@@ -1034,7 +1116,7 @@
     const MODES = ["自动", "制冷", "制热", "除湿", "送风"];
     const SPEEDS = ["自动", "低速", "中速", "高速", "最大"];
     const PROTOCOLS = ["AC", "AMCOR", "AIRWELL", "AIRTON", "ARGO", "ARRIS", "BOSE", "BOSCH144", "CARRIER_AC", "CARRIER_AC40", "CARRIER_AC64", "CARRIER_AC84", "CARRIER_AC128", "CLIMABUTLER", "COOLIX", "COOLIX48", "CORONA_AC", "DAIKIN", "DAIKIN2", "DAIKIN64", "DAIKIN128", "DAIKIN152", "DAIKIN160", "DAIKIN176", "DAIKIN200", "DAIKIN216", "DAIKIN312", "DENON", "DELONGHI_AC", "DISH", "DOSHISHA", "ELECTRA_AC", "EPSON", "ECOCLIM", "ELITESCREENS", "GICABLE", "GLOBALCACHE", "GREE", "GOODWEATHER", "GORENJE", "HAIER_AC", "HAIER_AC160", "HAIER_AC176", "HAIER_AC_YRW02", "HITACHI_AC", "HITACHI_AC1", "HITACHI_AC2", "HITACHI_AC3", "HITACHI_AC264", "HITACHI_AC296", "HITACHI_AC344", "HITACHI_AC424", "INAX", "JVC", "KELON", "KELON168", "KELVINATOR", "LASERTAG", "LEGOPF", "LG", "LG2", "LUTRON", "MAGIQUEST", "MIDEA", "MIDEA24", "METZ", "MIRAGE", "MITSUBISHI", "MITSUBISHI2", "MITSUBISHI112", "MITSUBISHI136", "MITSUBISHI_AC", "MITSUBISHI_HEAVY_88", "MITSUBISHI_HEAVY_152", "MULTIBRACKETS", "MWM", "NEC", "NEC_LIKE", "NEOCLIMA", "NIKAI", "PANASONIC", "PANASONIC_AC", "PANASONIC_AC32", "PIONEER", "PRONTO", "RAW", "RC5", "RC5X", "RC6", "RCMM", "RHOSS", "SAMSUNG", "SAMSUNG36", "SAMSUNG_AC", "SANYO", "SANYO_AC", "SANYO_AC88", "SANYO_AC152", "SANYO_LC7461", "SAR", "SHARP", "SHARP_AC", "SHERWOOD", "SONY", "SONY_38K", "SYMPHONY", "TECHNIBEL_AC", "TECO", "TEKNOPOINT", "TCL96AC", "TCL112AC", "TOSHIBA_AC", "TOTO", "TRANSCOLD", "TRUMA", "TROTEC", "TROTEC_3550", "UNKNOWN", "UNUSED", "VESTEL_AC", "VOLTAS", "WHIRLPOOL_AC", "WHYNTER", "WOWWEE", "XMP", "YORK", "ZEPEAL"];
-    const PROTOCOL_CN = { AC: "通用空调", AMCOR: "安可达", AIRWELL: "艾尔威尔", AIRTON: "艾尔顿", ARGO: "阿尔戈", BOSCH144: "博世144位", CARRIER_AC: "开利", CARRIER_AC40: "开利40位", CARRIER_AC84: "开利84位", CARRIER_AC128: "开利128位", CLIMABUTLER: "气候管家", COOLIX: "美的", COOLIX48: "美的（48位）", CORONA_AC: "科罗纳", DAIKIN: "大金", DAIKIN2: "大金2", DAIKIN64: "大金64位", DAIKIN128: "大金128位", DAIKIN152: "大金152位", DAIKIN160: "大金160位", DAIKIN176: "大金176位", DAIKIN200: "大金200位", DAIKIN216: "大金216位", DAIKIN312: "大金312位", DENON: "天龙", DELONGHI_AC: "德龙", DOSHISHA: "同志社", ELECTRA_AC: "伊莱克特拉", EPSON: "爱普生", ECOCLIM: "环保气候", GREE: "格力", GOODWEATHER: "好天气", GORENJE: "戈兰尼", HAIER_AC: "海尔", HAIER_AC160: "海尔160位", HAIER_AC176: "海尔176位", HAIER_AC_YRW02: "海尔YRW02", HITACHI_AC: "日立", HITACHI_AC1: "日立1", HITACHI_AC2: "日立2", HITACHI_AC3: "日立3", HITACHI_AC264: "日立264位", HITACHI_AC296: "日立296位", HITACHI_AC344: "日立344位", HITACHI_AC424: "日立424位", INAX: "伊奈", JVC: "JVC", KELON: "科龙", KELON168: "科龙168位", KELVINATOR: "格力", LEGOPF: "乐高电源", LG: "LG", LG2: "LG2", MIDEA: "美的", MIDEA24: "美的24位", MIRAGE: "米拉奇", MITSUBISHI: "三菱", MITSUBISHI2: "三菱2", MITSUBISHI112: "三菱112位", MITSUBISHI136: "三菱136位", MITSUBISHI_AC: "三菱电机", MITSUBISHI_HEAVY_88: "三菱重工88位", MITSUBISHI_HEAVY_152: "三菱重工152位", NEC: "NEC", NEC_LIKE: "NEC兼容", NEOCLIMA: "新气候", NIKAI: "尼凯", PANASONIC: "松下", PANASONIC_AC: "松下空调", PANASONIC_AC32: "松下32位", PIONEER: "先锋", RHOSS: "罗斯", SAMSUNG: "三星", SAMSUNG36: "三星36位", SAMSUNG_AC: "三星空调", SANYO: "三洋", SANYO_AC: "三洋空调", SANYO_AC88: "三洋88位", SANYO_AC152: "三洋152位", SANYO_LC7461: "三洋LC7461", SHARP: "夏普", SHARP_AC: "夏普空调", SHERWOOD: "舍伍德", SONY: "索尼", SONY_38K: "索尼38K", SYMPHONY: "交响乐", TECHNIBEL_AC: "特奇贝尔", TECO: "东元", TCL96AC: "TCL96位", TCL112AC: "TCL112位", TOSHIBA_AC: "东芝空调", TOTO: "TOTO", TRANSCOLD: "创冷", TRUMA: "特鲁马", TROTEC: "特罗泰克", TROTEC_3550: "特罗泰克3550", UNKNOWN: "未知", UNUSED: "未使用", VESTEL_AC: "威斯特尔", VOLTAS: "沃尔塔斯", WHIRLPOOL_AC: "惠而浦", WHYNTER: "惠特", YORK: "约克", ZEPEAL: "泽皮尔" };
+    const PROTOCOL_CN = { AC: "通用空调", AMCOR: "安可达", AIRWELL: "艾尔威尔", AIRTON: "艾尔顿", ARGO: "阿尔戈", BOSCH144: "博世144位", CARRIER_AC: "开利", CARRIER_AC40: "开利40位", CARRIER_AC84: "开利84位", CARRIER_AC128: "开利128位", CLIMABUTLER: "气候管家", COOLIX: "美的", COOLIX48: "美的(48位)", CORONA_AC: "科罗纳", DAIKIN: "大金", DAIKIN2: "大金2", DAIKIN64: "大金64位", DAIKIN128: "大金128位", DAIKIN152: "大金152位", DAIKIN160: "大金160位", DAIKIN176: "大金176位", DAIKIN200: "大金200位", DAIKIN216: "大金216位", DAIKIN312: "大金312位", DENON: "天龙", DELONGHI_AC: "德龙", DOSHISHA: "同志社", ELECTRA_AC: "TCL", EPSON: "爱普生", ECOCLIM: "环保气候", GREE: "格力", GOODWEATHER: "好天气", GORENJE: "戈兰尼", HAIER_AC: "海尔", HAIER_AC160: "海尔160位", HAIER_AC176: "海尔176位", HAIER_AC_YRW02: "海尔YRW02", HITACHI_AC: "日立", HITACHI_AC1: "日立1", HITACHI_AC2: "日立2", HITACHI_AC3: "日立3", HITACHI_AC264: "日立264位", HITACHI_AC296: "日立296位", HITACHI_AC344: "日立344位", HITACHI_AC424: "日立424位", INAX: "伊奈", JVC: "JVC", KELON: "科龙", KELON168: "科龙168位", KELVINATOR: "格力", LEGOPF: "乐高电源", LG: "LG", LG2: "LG2", MIDEA: "美的", MIDEA24: "美的24位", MIRAGE: "米拉奇", MITSUBISHI: "三菱", MITSUBISHI2: "三菱2", MITSUBISHI112: "三菱112位", MITSUBISHI136: "三菱136位", MITSUBISHI_AC: "三菱电机", MITSUBISHI_HEAVY_88: "三菱重工88位", MITSUBISHI_HEAVY_152: "三菱重工152位", NEC: "NEC", NEC_LIKE: "NEC兼容", NEOCLIMA: "新气候", NIKAI: "尼凯", PANASONIC: "松下", PANASONIC_AC: "松下空调", PANASONIC_AC32: "松下32位", PIONEER: "先锋", RHOSS: "罗斯", SAMSUNG: "三星", SAMSUNG36: "三星36位", SAMSUNG_AC: "三星空调", SANYO: "三洋", SANYO_AC: "三洋空调", SANYO_AC88: "三洋88位", SANYO_AC152: "三洋152位", SANYO_LC7461: "三洋LC7461", SHARP: "夏普", SHARP_AC: "夏普空调", SHERWOOD: "舍伍德", SONY: "索尼", SONY_38K: "索尼38K", SYMPHONY: "交响乐", TECHNIBEL_AC: "特奇贝尔", TECO: "东元", TCL96AC: "TCL96位", TCL112AC: "TCL112位", TOSHIBA_AC: "东芝空调", TOTO: "TOTO", TRANSCOLD: "创冷", TRUMA: "特鲁马", TROTEC: "特罗泰克", TROTEC_3550: "特罗泰克3550", UNKNOWN: "未知", UNUSED: "未使用", VESTEL_AC: "威斯特尔", VOLTAS: "沃尔塔斯", WHIRLPOOL_AC: "惠而浦", WHYNTER: "惠特", YORK: "约克", ZEPEAL: "泽皮尔" };
 
     let client = null,
       temp = 26,
@@ -1054,11 +1136,60 @@
       pendingUpdateCheck = false,
       learnClearTimer = 0;
     let isConnected = false;
+    let manualDisconnect = false;
 
     const $ = id => document.getElementById(id);
     const DEVICE_STATUS_TOPIC = () => cfg.topic + "/status";
     const DEVICE_OUT_TOPIC = () => cfg.topic + "/out";
     const DEVICE_TIMEOUT_MS = 30000;
+
+    // ============================================================
+    //  统一连接状态管理
+    // ============================================================
+    const CONN_STATE = {
+      IDLE: 'idle',
+      CONNECTING: 'connecting',
+      CONNECTED: 'connected',
+      RECONNECTING: 'reconnecting',
+      ERROR: 'error'
+    };
+    let connState = CONN_STATE.IDLE;
+
+    function updateUIForState() {
+      const state = connState;
+      switch (state) {
+        case CONN_STATE.IDLE:
+          setStatus('未连接', 'off');
+          setConnectingView(false);
+          setConnectionNotice(false);
+          updateControlsEnabled(false);
+          break;
+        case CONN_STATE.CONNECTING:
+          setStatus('连接中…', 'busy');
+          setConnectingView(true);
+          setConnectionNotice(false);
+          updateControlsEnabled(false);
+          break;
+        case CONN_STATE.CONNECTED:
+          setStatus('已连接', 'on');
+          setConnectingView(false);
+          setConnectionNotice(false);
+          updateControlsEnabled(true);
+          break;
+        case CONN_STATE.RECONNECTING:
+          setStatus('重连中…', 'busy');
+          setConnectingView(true);
+          setConnectionNotice(false);
+          updateControlsEnabled(false);
+          break;
+        case CONN_STATE.ERROR:
+          setStatus('连接失败', 'off');
+          setConnectingView(false);
+          setConnectionNotice(true);
+          updateControlsEnabled(false);
+          break;
+      }
+    }
 
     // ============================================================
     //  页面切换
@@ -1334,6 +1465,23 @@
       s.className = "pill " + cls;
     }
 
+    function setConnectingView(show) {
+      const view = $("connectingView");
+      if (view) view.classList.toggle("show", !!show);
+    }
+
+    function setConnectionNotice(show) {
+      const notice = $("connectionNotice");
+      if (notice) notice.classList.toggle("show", !!show);
+    }
+
+    function setConnectingMessage(title, hint) {
+      const titleEl = document.querySelector("#connectingView .connecting-title");
+      const hintEl = document.querySelector("#connectingView .connecting-hint");
+      if (titleEl && title) titleEl.textContent = title;
+      if (hintEl && hint) hintEl.innerHTML = hint;
+    }
+
     function setDevStatus(text, cls) {
       const s = $("devStatus");
       s.textContent = text;
@@ -1349,10 +1497,8 @@
       try {
         const j = JSON.parse(msg);
         if (typeof j.online === "boolean") {
-          if (j.online) {
-            lastDeviceHeartbeat = Date.now();
-            setDeviceOnline(true);
-          }
+          lastDeviceHeartbeat = Date.now();
+          setDeviceOnline(j.online);
           return;
         }
       } catch (e) { }
@@ -1361,7 +1507,8 @@
     }
 
     function checkDevicePresence() {
-      if (!client || !client.connected) { setDeviceOnline(false); return; }
+      // MQTT 通道断开只代表网页暂时收不到状态，不直接判定设备离线。
+      if (!client || !client.connected) return;
       const now = Date.now();
       if (lastDeviceHeartbeat && now - lastDeviceHeartbeat > DEVICE_TIMEOUT_MS) { setDeviceOnline(false); }
       if (!lastDeviceHeartbeat && brokerConnectTime && now - brokerConnectTime > DEVICE_TIMEOUT_MS) {
@@ -1606,7 +1753,7 @@
         q = String(b).split(".").map(Number);
       for (let i = 0; i < Math.max(p.length, q.length); i++) {
         const x = p[i] || 0,
-        y = q[i] || 0; if (x !== y) return x - y;
+          y = q[i] || 0; if (x !== y) return x - y;
       }
       return 0;
     }
@@ -1741,96 +1888,138 @@
     };
 
     // ============================================================
-    //  MQTT 连接 / 断开
+    //  MQTT 连接（修复版）
     // ============================================================
     function connect() {
+      // 如果已连接，不重复连接
+      if (client && client.connected) {
+        log('已连接，无需重复连接');
+        return;
+      }
+      // 清理旧 client
+      if (client) {
+        try { client.end(true); } catch (e) { }
+        client = null;
+      }
+
+      manualDisconnect = false;
       saveCfg();
       rememberTopic();
       resetSessionView();
-      if (client) { try { client.end(true); } catch (e) { } }
-      setStatus("连接中…", "busy");
-      log("连接 " + buildUrl());
-      client = mqtt.connect(buildUrl(), {
+
+      connState = CONN_STATE.CONNECTING;
+      updateUIForState();
+      log('连接 ' + buildUrl());
+
+      const connection = mqtt.connect(buildUrl(), {
         username: cfg.username || undefined,
         password: cfg.password || undefined,
-        clientId: "web_mqtt_" + Math.random().toString(16).slice(2, 10),
+        clientId: 'web_mqtt_' + Math.random().toString(16).slice(2, 10),
         reconnectPeriod: 5000,
         connectTimeout: 10000,
         keepalive: 30
       });
-      client.on("connect", () => {
-        isConnected = true;
-        updateControlsEnabled(true);
-        setStatus("已连接", "on");
+      client = connection;
+
+      let connectionHadConnected = false;
+
+      connection.on('connect', () => {
+        if (client !== connection) return;
+        connectionHadConnected = true;
+        manualDisconnect = false;
+        connState = CONN_STATE.CONNECTED;
+        updateUIForState();
+
         lastDeviceHeartbeat = 0;
         brokerConnectTime = Date.now();
-        setDevStatus("检测中…", "busy");
-        log("已连接");
-        // 保存自动重连标志（同时用于控制配置展开状态）
+        setDevStatus('检测中…', 'busy');
+        log('已连接');
+
         localStorage.setItem('mqtt_auto_connect', 'true');
+
+        // 订阅主题
         client.subscribe(DEVICE_STATUS_TOPIC(), { qos: 0 });
         client.subscribe(DEVICE_OUT_TOPIC(), { qos: 0 });
+
         setTimeout(syncDeviceTime, 250);
         setTimeout(loadTimers, 450);
         if (pendingUpdateCheck) setTimeout(checkUpdate, 300);
       });
-      client.on("message", (topic, payload) => {
+
+      connection.on('reconnect', () => {
+        if (client !== connection) return;
+        if (manualDisconnect) return;
+        connState = CONN_STATE.RECONNECTING;
+        updateUIForState();
+        log('正在重连…');
+      });
+
+      connection.on('close', () => {
+        if (client !== connection) return;
+        const wasManual = manualDisconnect;
+        manualDisconnect = false;
+
+        if (wasManual) {
+          connState = CONN_STATE.IDLE;
+          localStorage.removeItem('mqtt_auto_connect');
+          // 折叠配置面板
+          $('connectDetails').removeAttribute('open');
+        } else {
+          // 被动断开：根据是否曾经连接成功决定状态
+          connState = connectionHadConnected ? CONN_STATE.RECONNECTING : CONN_STATE.ERROR;
+          if (!connectionHadConnected) {
+            localStorage.removeItem('mqtt_auto_connect');
+          }
+        }
+        updateUIForState();
+        log('连接已断开');
+      });
+
+      connection.on('error', (e) => {
+        if (client !== connection) return;
+        log('MQTT 错误: ' + (e.message || e));
+        // 如果连接已建立，仅记录，不改变状态
+        if (connection.connected) return;
+        // 未建立时进入错误状态
+        if (!manualDisconnect) {
+          connState = CONN_STATE.ERROR;
+          updateUIForState();
+          localStorage.removeItem('mqtt_auto_connect');
+        }
+      });
+
+      connection.on('message', (topic, payload) => {
+        if (client !== connection) return;
         const msg = payload.toString();
-        log(topic + " : " + msg, true);
+        log(topic + ' : ' + msg, true);
         if (topic === DEVICE_STATUS_TOPIC()) { onDeviceStatus(msg); }
         parseTimerResponse(msg);
         parseStatus(msg);
       });
-      client.on("close", () => {
-        isConnected = false;
-        updateControlsEnabled(false);
-        setStatus("未连接", "off");
-        setDeviceOnline(false);
-        log("连接已断开");
-      });
-      client.on("error", e => {
-        isConnected = false;
-        updateControlsEnabled(false);
-        setStatus("错误", "off");
-        log("错误: " + ((e && e.message) || e));
-      });
     }
 
+    // ============================================================
+    //  断开连接
+    // ============================================================
     function disconnect() {
-      if (client) { try { client.end(true); } catch (e) { } client = null; }
-      isConnected = false;
-      updateControlsEnabled(false);
-      setStatus("未连接", "off");
-      setDeviceOnline(false);
-      // 清除自动重连标志，下次不会自动连接，且配置会重新展开
+      manualDisconnect = true;
+      if (client) {
+        try { client.end(true); } catch (e) { }
+        client = null;
+      }
+      connState = CONN_STATE.IDLE;
+      updateUIForState();
       localStorage.removeItem('mqtt_auto_connect');
-      // 同时折叠配置（用户断开后，下次打开可重新配置）
       $('connectDetails').removeAttribute('open');
     }
 
     // ============================================================
-    //  页面初始化：根据标志控制配置展开状态
-    // ============================================================
-    function initConnectDetails() {
-      const details = $('connectDetails');
-      if (!details) return;
-      const hasConnected = localStorage.getItem('mqtt_auto_connect') === 'true';
-      if (hasConnected) {
-        details.removeAttribute('open'); // 曾经连接过，折叠
-      } else {
-        details.setAttribute('open', 'open'); // 从未连接，展开
-      }
-    }
-
-    // ============================================================
-    //  自动重连（仅在标志存在时尝试）
+    //  自动重连
     // ============================================================
     function autoConnectIfNeeded() {
-      if (localStorage.getItem('mqtt_auto_connect') === 'true') {
-        if (!client || !client.connected) {
-          connect();
-        }
-      }
+      if (localStorage.getItem('mqtt_auto_connect') !== 'true') return;
+      if (connState === CONN_STATE.CONNECTED || connState === CONN_STATE.CONNECTING) return;
+      connect();
     }
 
     // ============================================================
@@ -1882,9 +2071,20 @@
     loadCfg();
     renderControls();
     renderEnv();
-    updateControlsEnabled(false); // 初始禁用
+    connState = CONN_STATE.IDLE;
+    updateUIForState();
 
     // 先控制配置展开状态
+    function initConnectDetails() {
+      const details = $('connectDetails');
+      if (!details) return;
+      const hasConnected = localStorage.getItem('mqtt_auto_connect') === 'true';
+      if (hasConnected) {
+        details.removeAttribute('open'); // 曾经连接过，折叠
+      } else {
+        details.setAttribute('open', 'open'); // 从未连接，展开
+      }
+    }
     initConnectDetails();
 
     // 再尝试自动重连（若标志存在）
