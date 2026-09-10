@@ -127,6 +127,23 @@
       line-height: 1.6;
     }
 
+    .connecting-cancel {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--card-2);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .connecting-cancel:active {
+      background: #ececf0;
+      transform: scale(.98);
+    }
+
     .connection-notice {
       display: none;
       margin: -10px 4px 16px;
@@ -722,79 +739,6 @@
       margin-right: 10px;
     }
 
-    /* ===== 定时页 ===== */
-    .timer-empty {
-      text-align: center;
-      color: var(--muted);
-      padding: 26px 8px;
-      background: var(--card-2);
-      border-radius: 14px;
-    }
-
-    .timer-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .timer-item:last-child {
-      border-bottom: 0;
-    }
-
-    .timer-main {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .timer-time {
-      font-size: 24px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .timer-desc {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 3px;
-    }
-
-    .timer-actions {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .timer-actions button {
-      padding: 8px 10px;
-      font-size: 13px;
-    }
-
-    .timer-switch {
-      transform: scale(.82);
-      transform-origin: right center;
-    }
-
-    .timer-form .row label {
-      width: 58px;
-    }
-
-    .timer-form .row {
-      margin-bottom: 10px;
-    }
-
-    .timer-form .split {
-      display: flex;
-      gap: 8px;
-      flex: 1;
-    }
-
-    .timer-form .split>* {
-      min-width: 0;
-      flex: 1;
-    }
-
     .timer-note {
       color: var(--muted);
       font-size: 12px;
@@ -818,17 +762,439 @@
       transform: scale(.96);
     }
 
-    .page-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 4px 24px;
+    /* ============================================================
+       ===== 定时页（全新 UI） =====
+       ============================================================ */
+    #timerPage {
+      padding-bottom: 10px;
     }
 
-    .page-title h1 {
-      font-size: 22px;
+    #timerPage .tc-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0 10px;
+    }
+
+    #timerPage .tc-back {
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 40px;
+    }
+
+    #timerPage .tc-devstate {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #timerPage .tc-devstate::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted-2);
+    }
+
+    #timerPage .tc-devstate.on {
+      color: #248a3d;
+    }
+
+    #timerPage .tc-devstate.on::before {
+      background: var(--ok);
+    }
+
+    #timerPage .tc-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    #timerPage .tc-heading small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #timerPage .tc-heading h2 {
+      font-size: 28px;
       font-weight: 700;
+      letter-spacing: -.03em;
+      line-height: 1.25;
+      margin-top: 2px;
+    }
+
+    #timerPage .tc-add {
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, .28);
+      flex-shrink: 0;
+    }
+
+    #timerPage .tc-add:active {
+      transform: scale(.94);
+      background: var(--accent-pressed);
+    }
+
+    #timerPage .tc-summary {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(0, 122, 255, .12), rgba(90, 200, 250, .10));
+      border: 1px solid rgba(0, 122, 255, .12);
+      margin-bottom: 22px;
+    }
+
+    #timerPage .tc-summary small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #timerPage .tc-summary>div {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      font-variant-numeric: tabular-nums;
+      margin-top: 4px;
+      display: flex;
+      align-items: baseline;
+    }
+
+    #timerPage .tc-summary>div span {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-left: 10px;
+      letter-spacing: 0;
+    }
+
+    #timerPage .tc-summary p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    #timerPage .tc-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+
+    #timerPage .tc-section>span:first-child {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    #timerPage .tc-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #timerPage .tc-tasks {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 0 16px;
+      box-shadow: var(--shadow);
+      min-height: 60px;
+    }
+
+    #timerPage .tc-task {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #timerPage .tc-task:last-child {
+      border-bottom: 0;
+    }
+
+    #timerPage .tc-edit {
       flex: 1;
+      min-width: 0;
+      text-align: left;
+      padding: 0;
+      background: transparent;
+      color: var(--text);
+      border-radius: 0;
+    }
+
+    #timerPage .tc-edit:active {
+      transform: none;
+      opacity: .6;
+    }
+
+    #timerPage .tc-time {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -.7px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    #timerPage .tc-meta {
+      display: block;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #timerPage .tc-task.off .tc-time,
+    #timerPage .tc-task.off .tc-meta {
+      color: var(--muted-2);
+    }
+
+    #timerPage .tc-toggle {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      background: #e9e9ea;
+      position: relative;
+      cursor: pointer;
+      flex: none;
+      margin: 9px 0;
+      transition: background-color .22s var(--ease);
+    }
+
+    #timerPage .tc-toggle::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+      transition: transform .22s var(--ease);
+    }
+
+    #timerPage .tc-toggle:checked {
+      background: var(--ok);
+    }
+
+    #timerPage .tc-toggle:checked::after {
+      transform: translateX(18px);
+    }
+
+    #timerPage .tc-empty {
+      text-align: center;
+      padding: 26px 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    #timerPage .tc-empty span {
+      font-size: 12px;
+      color: var(--muted-2);
+    }
+
+    #timerPage .tc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 0 2px;
+    }
+
+    #timerPage .tc-footer>span {
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    #timerPage .tc-footer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    #timerPage .tc-refresh {
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 9px;
+      min-height: 36px;
+    }
+
+    #timerPage .tc-refresh:active {
+      transform: scale(.96);
+      background: rgba(0, 122, 255, .18);
+    }
+
+    #timerPage .tc-toast {
+      min-height: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 8px;
+    }
+
+    /* 底部编辑面板 */
+    #timerPage .tc-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+      background: rgba(0, 0, 0, .38);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+
+    #timerPage .tc-overlay[hidden] {
+      display: none;
+    }
+
+    #timerPage .tc-sheet {
+      width: 100%;
+      max-width: 520px;
+      max-height: 88dvh;
+      overflow-y: auto;
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+      background: var(--card);
+      border-radius: 22px;
+      color: var(--text);
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, .18);
+      animation: sheetUp .28s var(--ease);
+    }
+
+    @keyframes sheetUp {
+      from {
+        transform: translateY(24px);
+        opacity: .6;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    #timerPage .tc-sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    #timerPage .tc-sheet-head h3 {
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    #timerPage .tc-sheet-cancel {
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      min-height: 40px;
+    }
+
+    #timerPage .tc-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #timerPage .tc-field>select,
+    #timerPage .tc-field>input {
+      flex: none;
+      width: auto;
+      max-width: 58%;
+      height: auto;
+      min-height: 42px;
+      padding: 8px 12px;
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+    }
+
+    #timerPage .tc-field>select {
+      padding-right: 34px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%238e8e93" stroke-width="2.5"><path d="m6 9 6 6 6-6" /></svg>');
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
+    #timerPage .tc-save {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    #timerPage .tc-save:active {
+      background: var(--accent-pressed);
+      transform: scale(.98);
+    }
+
+    #timerPage .tc-delete {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      border-radius: 14px;
+      background: transparent;
+      color: var(--err);
+      border: 1px solid rgba(255, 59, 48, .3);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    #timerPage .tc-delete:active {
+      background: rgba(255, 59, 48, .06);
+      transform: scale(.98);
     }
 
     /* ===== OTA 辅助 ===== */
@@ -910,7 +1276,8 @@
     <div class="connecting-card">
       <div class="connecting-spinner"></div>
       <div class="connecting-title">正在连接 MQTT…</div>
-      <div class="connecting-hint">正在恢复 MQTT 连接，请稍候<br>连接成功后将自动恢复控制</div>
+      <div class="connecting-hint">正在连接服务器，请稍候<br>连接成功后将自动恢复控制</div>
+      <button type="button" class="connecting-cancel" onclick="disconnect()">取消连接</button>
     </div>
   </div>
 
@@ -1062,47 +1429,89 @@
       </details>
     </div>
 
-    <!-- ==================== 定时页 ==================== -->
+    <!-- ==================== 定时页（全新 UI） ==================== -->
     <div class="page" id="timerPage">
-      <div class="page-title">
-        <div class="logo">⏰</div>
-        <h1>定时任务</h1>
-        <button class="nav-btn" onclick="showControlPage()">← 空调控制</button>
+
+      <div class="tc-nav">
+        <button class="tc-back" onclick="showControlPage()">‹ 空调控制</button>
+        <span class="tc-devstate" id="tcDevState">设备离线</span>
       </div>
 
-      <div class="card timer-form">
-        <h2>添加定时</h2>
-        <div class="row"><label>时间</label>
-          <div class="split"><input id="timerHour" type="number" min="0" max="23" value="8" aria-label="小时"><input
-              id="timerMinute" type="number" min="0" max="59" value="0" aria-label="分钟"></div>
+      <div class="tc-heading">
+        <div>
+          <small>设备日程</small>
+          <h2>定时任务</h2>
         </div>
-        <div class="row"><label>温度</label><input id="timerTemp" type="number" min="16" max="30"
-            value="26"><span>℃</span></div>
-        <div class="row"><label>模式</label><select id="timerMode"></select></div>
-        <div class="row"><label>风速</label><select id="timerSpeed"></select></div>
-        <div class="row"><label>动作</label><select id="timerPower">
-            <option value="on">开机</option>
-            <option value="off">关机</option>
-          </select></div>
-        <div class="row"><label>重复</label><select id="timerRepeat">
-            <option value="1">每天</option>
-            <option value="0">仅一次</option>
-          </select></div>
-        <button class="primary" style="width:100%;margin-top:4px" onclick="addTimerFromPage()">添加定时任务</button>
-        <div class="timer-note">设备需要联网并完成时间同步，定时任务最多保存 10 条。</div>
+        <button class="tc-add" onclick="openTimerSheet(-1)" aria-label="新增定时">＋</button>
       </div>
 
-      <div class="card">
-        <h2>已添加任务</h2>
-        <div id="timerList">
-          <div class="timer-empty">连接设备后加载定时任务</div>
+      <div class="tc-summary" id="tcSummary">
+        <small>下一次执行</small>
+        <div>--:--</div>
+        <p>连接设备后加载定时任务</p>
+      </div>
+
+      <div class="tc-section">
+        <span>我的日程</span>
+        <span class="tc-count" id="tcCount">--</span>
+      </div>
+
+      <div class="tc-tasks" id="tcTasks">
+        <div class="tc-empty">连接设备后加载定时任务</div>
+      </div>
+
+      <div class="tc-footer">
+        <span id="webClock">网页时间 --</span>
+        <div class="tc-footer-actions">
+          <button class="tc-refresh" onclick="syncDeviceTime()">同步时间</button>
+          <button class="tc-refresh" onclick="loadTimers()">刷新</button>
         </div>
-        <div class="quick">
-          <button onclick="syncDeviceTime()">同步手机时间</button>
-          <button class="primary" onclick="loadTimers()">刷新列表</button>
-        </div>
-        <div class="timer-note" id="webClock">网页当前时间：--</div>
-        <div class="status-text" id="timerStatus"></div>
+      </div>
+
+      <div class="tc-toast" id="timerStatus" aria-live="polite"></div>
+
+      <!-- 编辑 / 新增面板 -->
+      <div class="tc-overlay" id="tcOverlay" hidden>
+        <form class="tc-sheet" id="tcSheet" onsubmit="return submitTimerSheet(event)">
+          <div class="tc-sheet-head">
+            <h3 id="tcSheetTitle">新增定时</h3>
+            <button type="button" class="tc-sheet-cancel" onclick="closeTimerSheet()">取消</button>
+          </div>
+
+          <label class="tc-field">执行时间
+            <input id="tcTime" type="time" value="08:00" required>
+          </label>
+
+          <label class="tc-field">动作
+            <select id="tcPower" onchange="onSheetPowerChange()">
+              <option value="on">开机</option>
+              <option value="off">关机</option>
+            </select>
+          </label>
+
+          <div class="tc-cooling" id="tcCooling">
+            <label class="tc-field">温度
+              <select id="tcTemp"></select>
+            </label>
+            <label class="tc-field">运行模式
+              <select id="tcMode"></select>
+            </label>
+            <label class="tc-field">风速
+              <select id="tcSpeed"></select>
+            </label>
+          </div>
+
+          <label class="tc-field">重复
+            <select id="tcRepeat">
+              <option value="1">每天</option>
+              <option value="0">仅一次</option>
+            </select>
+          </label>
+
+          <button type="submit" class="tc-save" id="tcSaveBtn">保存定时</button>
+          <button type="button" class="tc-delete" id="tcDeleteBtn" style="display:none"
+            onclick="deleteEditingTimer()">删除此定时</button>
+        </form>
       </div>
     </div>
 
@@ -1128,6 +1537,8 @@
       curHumidity = "--";
     let cfg = { host: "broker-cn.emqx.io", port: 8084, path: "/mqtt", tls: true, username: "", password: "", topic: "ac/esp32/xxxx", devType: "esp32" };
     let timerItems = [];
+    let tcEditingId = null;          // 当前正在编辑的定时 id，null 表示新增
+    let timerStatusTimer = 0;
     let lastDeviceHeartbeat = 0,
       brokerConnectTime = 0,
       otaCompletedUntil = 0,
@@ -1135,13 +1546,18 @@
       pendingFw = null,
       pendingUpdateCheck = false,
       learnClearTimer = 0;
-    let isConnected = false;
     let manualDisconnect = false;
+
+    // 连接重试控制
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 4;
+    let reconnectStopped = false;
 
     const $ = id => document.getElementById(id);
     const DEVICE_STATUS_TOPIC = () => cfg.topic + "/status";
     const DEVICE_OUT_TOPIC = () => cfg.topic + "/out";
     const DEVICE_TIMEOUT_MS = 30000;
+    const pad2 = v => String(v).padStart(2, "0");
 
     // ============================================================
     //  统一连接状态管理
@@ -1156,8 +1572,7 @@
     let connState = CONN_STATE.IDLE;
 
     function updateUIForState() {
-      const state = connState;
-      switch (state) {
+      switch (connState) {
         case CONN_STATE.IDLE:
           setStatus('未连接', 'off');
           setConnectingView(false);
@@ -1182,12 +1597,16 @@
           setConnectionNotice(false);
           updateControlsEnabled(false);
           break;
-        case CONN_STATE.ERROR:
+        case CONN_STATE.ERROR: {
           setStatus('连接失败', 'off');
           setConnectingView(false);
           setConnectionNotice(true);
           updateControlsEnabled(false);
+          // 展开连接配置，方便用户修改后重试
+          const cd = $('connectDetails');
+          if (cd) cd.setAttribute('open', 'open');
           break;
+        }
       }
     }
 
@@ -1237,36 +1656,103 @@
     }
 
     // ============================================================
-    //  定时页相关
+    //  定时页（新 UI）—— 数据与渲染
     // ============================================================
     function timerStatus(text, color) {
       const el = $("timerStatus");
-      if (el) {
-        el.textContent = text || "";
-        el.style.color = color || "var(--muted)";
+      if (!el) return;
+      clearTimeout(timerStatusTimer);
+      el.textContent = text || "";
+      el.style.color = color || "var(--accent)";
+      if (text) {
+        timerStatusTimer = setTimeout(function () { el.textContent = ""; }, 4200);
       }
-    }
-
-    function renderTimers() {
-      const box = $("timerList");
-      if (!box) return;
-      if (!timerItems.length) { box.innerHTML = '<div class="timer-empty">暂无定时任务</div>'; return; }
-      box.innerHTML = timerItems.map(function (t) {
-        const hh = String(t.hour).padStart(2, "0"),
-          mm = String(t.minute).padStart(2, "0");
-        const desc = (t.power ? "开机" : "关机") + " · " + (t.power ? (t.temp + "℃ · " + timerModeName(t
-          .mode) + " · " + timerSpeedName(t.speed)) : "") + " · " + (t.repeat ? "每天" : "仅一次");
-        return '<div class="timer-item"><div class="timer-main"><div class="timer-time">' + hh + ':' + mm +
-          '</div><div class="timer-desc">' + desc + '</div></div>' +
-          '<div class="timer-actions"><div class="switch timer-switch ' + (t.enabled ? 'on' : '') +
-          '" title="启用/停用" onclick="toggleTimer(' + t.id + ',' + (t.enabled ? 'false' : 'true') +
-          ')"></div><button class="danger" onclick="deleteTimer(' + t.id + ')">删除</button></div></div>';
-      }).join("");
     }
 
     function timerModeName(v) { return MODES[Number(v)] || "模式 " + v; }
 
     function timerSpeedName(v) { return SPEEDS[Number(v)] || "风速 " + v; }
+
+    function updateTimerCount() {
+      const el = $("tcCount");
+      if (!el) return;
+      const on = timerItems.filter(function (t) { return t.enabled; }).length;
+      el.textContent = on + " 项启用 / " + timerItems.length + " 项任务";
+    }
+
+    function renderTimerSummary() {
+      const box = $("tcSummary");
+      if (!box) return;
+
+      const enabled = timerItems.filter(function (t) { return t.enabled; });
+
+      if (!enabled.length) {
+        box.innerHTML = '<small>下一次执行</small><div>--:--</div><p>' +
+          (timerItems.length ? '所有定时已停用' : '暂无定时任务') + '</p>';
+        return;
+      }
+
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const sorted = enabled.slice().sort(function (a, b) {
+        return (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute);
+      });
+
+      let next = sorted.find(function (t) { return (t.hour * 60 + t.minute) > nowMin; });
+      if (!next) next = sorted.find(function (t) { return t.repeat; });
+
+      if (!next) {
+        box.innerHTML = '<small>下一次执行</small><div>--:--</div><p>今天的任务已全部执行</p>';
+        return;
+      }
+
+      const hh = pad2(next.hour), mm = pad2(next.minute);
+      const action = next.power ? "自动开机" : "自动关机";
+      let desc = next.repeat ? "每天" : "仅一次";
+      if (next.power) desc += " · " + next.temp + "℃ " + timerModeName(next.mode);
+
+      box.innerHTML = '<small>下一次执行</small><div>' + hh + ':' + mm +
+        '<span>' + action + '</span></div><p>' + desc + '</p>';
+    }
+
+    function renderTimers() {
+      const box = $("tcTasks");
+      if (!box) return;
+
+      if (!timerItems.length) {
+        box.innerHTML = '<div class="tc-empty">暂无定时任务<br><span>点击右上角 ＋ 添加</span></div>';
+        renderTimerSummary();
+        updateTimerCount();
+        return;
+      }
+
+      const sorted = timerItems.slice().sort(function (a, b) {
+        return (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute);
+      });
+
+      box.innerHTML = sorted.map(function (t) {
+        const hh = pad2(t.hour), mm = pad2(t.minute);
+
+        let meta = t.power
+          ? "开机 · " + t.temp + "°C " + timerModeName(t.mode) + " · " + timerSpeedName(t.speed)
+          : "关机";
+        meta += " · " + (t.repeat ? "每天" : "仅一次");
+        if (!t.enabled) meta += " · 已停用";
+
+        return '<div class="tc-task' + (t.enabled ? '' : ' off') + '">' +
+          '<button type="button" class="tc-edit" onclick="openTimerSheet(' + t.id + ')" aria-label="编辑 ' +
+          hh + ':' + mm + ' 定时">' +
+          '<div class="tc-time">' + hh + ':' + mm + '</div>' +
+          '<span class="tc-meta">' + meta + '</span>' +
+          '</button>' +
+          '<input class="tc-toggle" type="checkbox" ' + (t.enabled ? 'checked' : '') +
+          ' onchange="toggleTimer(' + t.id + ', this.checked)" aria-label="启用 ' + hh + ':' + mm + ' 定时">' +
+          '</div>';
+      }).join("");
+
+      renderTimerSummary();
+      updateTimerCount();
+    }
 
     function loadTimers() {
       if (!client || !client.connected) { timerStatus("请先连接 MQTT", "var(--warn)"); return; }
@@ -1274,51 +1760,143 @@
       send("timer=list");
     }
 
-    function addTimerFromPage() {
-      const h = Math.max(0, Math.min(23, parseInt($("timerHour").value) || 0));
-      const m = Math.max(0, Math.min(59, parseInt($("timerMinute").value) || 0));
-      const t = Math.max(16, Math.min(30, parseInt($("timerTemp").value) || 26));
-      send("timer=add;hour=" + h + ";minute=" + m + ";temp=" + t + ";mode=" + $("timerMode").value +
-        ";speed=" + $("timerSpeed").value + ";power=" + $("timerPower").value + ";repeat=" + $(
-          "timerRepeat").value);
-      timerStatus("正在添加…", "var(--warn)");
+    // ---------- 编辑面板 ----------
+    function openTimerSheet(id) {
+      if (!client || !client.connected) { timerStatus("请先连接 MQTT", "var(--warn)"); return; }
+
+      tcEditingId = (id === undefined || id === null || Number(id) < 0) ? null : Number(id);
+      const t = tcEditingId === null ? null : timerItems.find(function (x) {
+        return Number(x.id) === tcEditingId;
+      });
+
+      $("tcSheetTitle").textContent = t ? "编辑定时" : "新增定时";
+      $("tcDeleteBtn").style.display = t ? "block" : "none";
+
+      if (t) {
+        $("tcTime").value = pad2(t.hour) + ":" + pad2(t.minute);
+        $("tcPower").value = t.power ? "on" : "off";
+        $("tcTemp").value = String(t.temp);
+        $("tcMode").value = String(t.mode);
+        $("tcSpeed").value = String(t.speed);
+        $("tcRepeat").value = t.repeat ? "1" : "0";
+      } else {
+        $("tcTime").value = "08:00";
+        $("tcPower").value = "on";
+        $("tcTemp").value = "26";
+        $("tcMode").value = "1";
+        $("tcSpeed").value = "0";
+        $("tcRepeat").value = "1";
+      }
+
+      onSheetPowerChange();
+      $("tcOverlay").hidden = false;
     }
 
-    function toggleTimer(id, enabled) { send("timer=enable;id=" + id + ";state=" + (enabled ? "1" : "0")); }
+    function closeTimerSheet() {
+      $("tcOverlay").hidden = true;
+      tcEditingId = null;
+    }
 
-    function deleteTimer(id) { if (confirm("删除这条定时任务？")) send("timer=delete;id=" + id); }
+    function onSheetPowerChange() {
+      const off = $("tcPower").value === "off";
+      $("tcCooling").style.display = off ? "none" : "block";
+    }
+
+    function submitTimerSheet(e) {
+      e.preventDefault();
+
+      if (!client || !client.connected) { timerStatus("请先连接 MQTT", "var(--warn)"); return false; }
+
+      const timeVal = $("tcTime").value || "08:00";
+      const parts = timeVal.split(":");
+      const h = Math.max(0, Math.min(23, parseInt(parts[0], 10) || 0));
+      const m = Math.max(0, Math.min(59, parseInt(parts[1], 10) || 0));
+      const t = Math.max(16, Math.min(30, parseInt($("tcTemp").value, 10) || 26));
+
+      let cmd;
+      if (tcEditingId === null) {
+        cmd = "timer=add;hour=" + h;
+      } else {
+        cmd = "timer=update;id=" + tcEditingId + ";hour=" + h;
+      }
+      cmd += ";minute=" + m + ";temp=" + t +
+        ";mode=" + $("tcMode").value +
+        ";speed=" + $("tcSpeed").value +
+        ";power=" + $("tcPower").value +
+        ";repeat=" + $("tcRepeat").value;
+
+      const editing = tcEditingId !== null;
+      const sent = send(cmd);
+      if (sent) {
+        timerStatus(editing ? "正在保存修改…" : "正在添加…", "var(--warn)");
+        closeTimerSheet();
+      }
+      return false;
+    }
+
+    function deleteEditingTimer() {
+      if (tcEditingId === null) return;
+      if (!client || !client.connected) { timerStatus("请先连接 MQTT", "var(--warn)"); return; }
+      if (!confirm("删除这条定时任务？")) return;
+      send("timer=delete;id=" + tcEditingId);
+      timerStatus("正在删除…", "var(--warn)");
+      closeTimerSheet();
+    }
+
+    function toggleTimer(id, enabled) {
+      if (!client || !client.connected) {
+        timerStatus("请先连接 MQTT", "var(--warn)");
+        renderTimers(); // 恢复开关显示
+        return;
+      }
+      timerStatus(enabled ? "正在启用任务…" : "正在停用任务…", "var(--warn)");
+      send("timer=enable;id=" + id + ";state=" + (enabled ? "1" : "0"));
+    }
 
     function syncDeviceTime() {
-      const d = new Date(),
-        pad = function (v) { return String(v).padStart(2, "0"); };
-      send("time=" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d
-        .getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()));
+      if (!client || !client.connected) { timerStatus("请先连接 MQTT", "var(--warn)"); return; }
+      const d = new Date();
+      send("time=" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " +
+        pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds()));
       timerStatus("已发送手机时间", "var(--ok)");
     }
 
     function updateWebClock() {
       const el = $("webClock");
       if (!el) return;
-      const d = new Date(),
-        pad = function (v) { return String(v).padStart(2, "0"); };
-      el.textContent = "网页当前时间：" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
-        " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+      const d = new Date();
+      el.textContent = "网页时间 " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
     }
     updateWebClock();
     setInterval(updateWebClock, 1000);
 
-    MODES.forEach(function (m, i) {
-      const o = document.createElement("option");
-      o.value = i;
-      o.textContent = m;
-      $("timerMode").appendChild(o);
-    });
-    SPEEDS.forEach(function (s, i) {
-      const o = document.createElement("option");
-      o.value = i;
-      o.textContent = s;
-      $("timerSpeed").appendChild(o);
-    });
+    // ---------- 编辑面板选项初始化 ----------
+    (function initTimerSheetOptions() {
+      const tempSel = $("tcTemp");
+      for (let t = 16; t <= 30; t++) {
+        const o = document.createElement("option");
+        o.value = String(t);
+        o.textContent = t + " ℃";
+        tempSel.appendChild(o);
+      }
+      tempSel.value = "26";
+
+      MODES.forEach(function (m, i) {
+        const o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = m;
+        $("tcMode").appendChild(o);
+      });
+      $("tcMode").value = "1";
+
+      SPEEDS.forEach(function (s, i) {
+        const o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = s;
+        $("tcSpeed").appendChild(o);
+      });
+      $("tcSpeed").value = "0";
+    })();
 
     // ============================================================
     //  配置 & 存储
@@ -1486,6 +2064,12 @@
       const s = $("devStatus");
       s.textContent = text;
       s.className = "pill " + cls;
+
+      const td = $("tcDevState");
+      if (td) {
+        td.textContent = (cls === "on") ? "设备在线" : "设备离线";
+        td.classList.toggle("on", cls === "on");
+      }
     }
 
     function setDeviceOnline(online) {
@@ -1507,13 +2091,11 @@
     }
 
     function checkDevicePresence() {
-      // MQTT 通道断开只代表网页暂时收不到状态，不直接判定设备离线。
       if (!client || !client.connected) return;
       const now = Date.now();
       if (lastDeviceHeartbeat && now - lastDeviceHeartbeat > DEVICE_TIMEOUT_MS) { setDeviceOnline(false); }
       if (!lastDeviceHeartbeat && brokerConnectTime && now - brokerConnectTime > DEVICE_TIMEOUT_MS) {
-        setDeviceOnline(
-          false);
+        setDeviceOnline(false);
       }
     }
     setInterval(checkDevicePresence, 5000);
@@ -1533,8 +2115,7 @@
     }
 
     function buildUrl() {
-      return (cfg.tls ? "wss" : "ws") + "://" + cfg.host + ":" + cfg.port + (cfg.path ||
-        "/mqtt");
+      return (cfg.tls ? "wss" : "ws") + "://" + cfg.host + ":" + cfg.port + (cfg.path || "/mqtt");
     }
 
     function resetSessionView() {
@@ -1549,11 +2130,13 @@
       brokerConnectTime = 0;
       pendingFw = null;
       pendingUpdateCheck = false;
+      timerItems = [];
       $("fwVer").textContent = "--";
       clearOtaUi();
       $("log").innerHTML = "";
       renderEnv();
       renderControls();
+      renderTimers();
       setDevStatus("检测中…", "busy");
     }
 
@@ -1569,10 +2152,8 @@
       $("tempVal").textContent = temp;
       $("powerSwitch").className = "switch" + (powerOn ? " on" : "");
       $("powerText").textContent = powerOn ? "开" : "关";
-      document.querySelectorAll("#modeGrid button").forEach((b, i) => b.className = i === modeIndex ? "active" :
-        "");
-      document.querySelectorAll("#speedGrid button").forEach((b, i) => b.className = i === speedIndex ? "active" :
-        "");
+      document.querySelectorAll("#modeGrid button").forEach((b, i) => b.className = i === modeIndex ? "active" : "");
+      document.querySelectorAll("#speedGrid button").forEach((b, i) => b.className = i === speedIndex ? "active" : "");
       if (protocolName) $("protocolSel").value = protocolName;
     }
 
@@ -1657,8 +2238,7 @@
         } else if (msg.indexOf("learn=success:") === 0) {
           const p = msg.substring("learn=success:".length);
           protocolName = p;
-          $("learnStatus").textContent = "学习成功：" + (PROTOCOL_CN[p] ? PROTOCOL_CN[p] + " (" + p + ")" :
-            p);
+          $("learnStatus").textContent = "学习成功：" + (PROTOCOL_CN[p] ? PROTOCOL_CN[p] + " (" + p + ")" : p);
           $("learnStatus").style.color = "var(--ok)";
           $("protocolSel").value = p;
           renderControls();
@@ -1680,24 +2260,23 @@
         try {
           timerItems = JSON.parse(msg.substring(7));
           renderTimers();
-          timerStatus("已更新任务列表");
+          timerStatus("已更新任务列表", "var(--ok)");
         } catch (e) { timerStatus("任务列表解析失败", "var(--err)"); }
       } else if (msg.indexOf("timer_add=success") === 0) {
         timerStatus("定时任务已添加", "var(--ok)");
         loadTimers();
       } else if (msg.indexOf("timer_update=success") === 0) {
-        timerStatus("定时任务已更新",
-          "var(--ok)");
+        timerStatus("定时任务已更新", "var(--ok)");
         loadTimers();
       } else if (msg.indexOf("timer_delete=success") === 0) {
-        timerStatus("定时任务已删除",
-          "var(--ok)");
+        timerStatus("定时任务已删除", "var(--ok)");
         loadTimers();
       } else if (msg.indexOf("timer_enable=success") === 0) {
-        timerStatus("任务状态已更新",
-          "var(--ok)");
+        timerStatus("任务状态已更新", "var(--ok)");
         loadTimers();
-      } else if (msg.indexOf("timer_") === 0) { timerStatus("操作失败，请重试", "var(--err)"); }
+      } else if (msg.indexOf("timer_") === 0) {
+        timerStatus("操作失败，请重试", "var(--err)");
+      }
     }
 
     function setRecoveryStatus(text, color) {
@@ -1809,7 +2388,7 @@
     }
 
     // ============================================================
-    //  发送指令（增加主题合法性校验）
+    //  发送指令
     // ============================================================
     function send(cmd) {
       if (!client || !client.connected) {
@@ -1888,37 +2467,48 @@
     };
 
     // ============================================================
-    //  MQTT 连接（修复版）
+    //  MQTT 连接（含重连上限与取消机制）
     // ============================================================
     function connect() {
-      // 如果已连接，不重复连接
       if (client && client.connected) {
         log('已连接，无需重复连接');
         return;
       }
-      // 清理旧 client
       if (client) {
         try { client.end(true); } catch (e) { }
         client = null;
       }
 
       manualDisconnect = false;
+      reconnectStopped = false;
+      reconnectAttempts = 0;
+
       saveCfg();
       rememberTopic();
       resetSessionView();
 
       connState = CONN_STATE.CONNECTING;
+      setConnectingMessage('正在连接 MQTT…', '正在连接服务器，请稍候<br>连接成功后将自动恢复控制');
       updateUIForState();
       log('连接 ' + buildUrl());
 
-      const connection = mqtt.connect(buildUrl(), {
-        username: cfg.username || undefined,
-        password: cfg.password || undefined,
-        clientId: 'web_mqtt_' + Math.random().toString(16).slice(2, 10),
-        reconnectPeriod: 5000,
-        connectTimeout: 10000,
-        keepalive: 30
-      });
+      let connection;
+      try {
+        connection = mqtt.connect(buildUrl(), {
+          username: cfg.username || undefined,
+          password: cfg.password || undefined,
+          clientId: 'web_mqtt_' + Math.random().toString(16).slice(2, 10),
+          reconnectPeriod: 5000,
+          connectTimeout: 10000,
+          keepalive: 30
+        });
+      } catch (err) {
+        log('无法创建连接: ' + (err && err.message ? err.message : err));
+        connState = CONN_STATE.ERROR;
+        updateUIForState();
+        localStorage.removeItem('mqtt_auto_connect');
+        return;
+      }
       client = connection;
 
       let connectionHadConnected = false;
@@ -1927,6 +2517,8 @@
         if (client !== connection) return;
         connectionHadConnected = true;
         manualDisconnect = false;
+        reconnectStopped = false;
+        reconnectAttempts = 0;
         connState = CONN_STATE.CONNECTED;
         updateUIForState();
 
@@ -1937,7 +2529,6 @@
 
         localStorage.setItem('mqtt_auto_connect', 'true');
 
-        // 订阅主题
         client.subscribe(DEVICE_STATUS_TOPIC(), { qos: 0 });
         client.subscribe(DEVICE_OUT_TOPIC(), { qos: 0 });
 
@@ -1949,28 +2540,47 @@
       connection.on('reconnect', () => {
         if (client !== connection) return;
         if (manualDisconnect) return;
+
+        reconnectAttempts++;
+        if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+          // 达到重连上限，主动停止并进入错误状态
+          reconnectStopped = true;
+          log('自动重连已达上限，停止重连');
+          setConnectingMessage('连接失败', '已停止自动重连<br>请检查配置后重新连接');
+          try { connection.end(true); } catch (e) { }
+          return;
+        }
+
         connState = CONN_STATE.RECONNECTING;
+        setConnectingMessage('正在重连…', '第 ' + reconnectAttempts + ' / ' + MAX_RECONNECT_ATTEMPTS +
+          ' 次重试，可点击下方取消连接');
         updateUIForState();
-        log('正在重连…');
+        log('正在重连…（' + reconnectAttempts + '/' + MAX_RECONNECT_ATTEMPTS + '）');
       });
 
       connection.on('close', () => {
         if (client !== connection) return;
-        const wasManual = manualDisconnect;
-        manualDisconnect = false;
 
-        if (wasManual) {
-          connState = CONN_STATE.IDLE;
+        const wasManual = manualDisconnect;
+        const wasStopped = reconnectStopped;
+        manualDisconnect = false;
+        reconnectStopped = false;
+
+        if (wasManual || wasStopped) {
+          client = null;
+          connState = wasStopped ? CONN_STATE.ERROR : CONN_STATE.IDLE;
           localStorage.removeItem('mqtt_auto_connect');
-          // 折叠配置面板
-          $('connectDetails').removeAttribute('open');
+          if (wasManual) {
+            const cd = $('connectDetails');
+            if (cd) cd.removeAttribute('open');
+          }
         } else {
-          // 被动断开：根据是否曾经连接成功决定状态
           connState = connectionHadConnected ? CONN_STATE.RECONNECTING : CONN_STATE.ERROR;
           if (!connectionHadConnected) {
             localStorage.removeItem('mqtt_auto_connect');
           }
         }
+
         updateUIForState();
         log('连接已断开');
       });
@@ -1978,13 +2588,10 @@
       connection.on('error', (e) => {
         if (client !== connection) return;
         log('MQTT 错误: ' + (e.message || e));
-        // 如果连接已建立，仅记录，不改变状态
         if (connection.connected) return;
-        // 未建立时进入错误状态
-        if (!manualDisconnect) {
-          connState = CONN_STATE.ERROR;
-          updateUIForState();
-          localStorage.removeItem('mqtt_auto_connect');
+        // 未建立连接时继续交给重连机制处理，仅更新提示文案
+        if (!manualDisconnect && !connectionHadConnected && connState !== CONN_STATE.ERROR) {
+          setConnectingMessage('连接失败', '无法连接到服务器，正在重试…<br>可点击下方取消连接');
         }
       });
 
@@ -1999,18 +2606,31 @@
     }
 
     // ============================================================
-    //  断开连接
+    //  断开连接 / 取消连接
     // ============================================================
     function disconnect() {
       manualDisconnect = true;
+      reconnectStopped = false;
+      reconnectAttempts = 0;
+
       if (client) {
         try { client.end(true); } catch (e) { }
         client = null;
       }
+
       connState = CONN_STATE.IDLE;
+      setConnectingMessage('正在连接 MQTT…', '正在连接服务器，请稍候<br>连接成功后将自动恢复控制');
       updateUIForState();
       localStorage.removeItem('mqtt_auto_connect');
-      $('connectDetails').removeAttribute('open');
+
+      const cd = $('connectDetails');
+      if (cd) cd.removeAttribute('open');
+
+      // 清空定时列表显示
+      timerItems = [];
+      renderTimers();
+
+      log('已断开连接');
     }
 
     // ============================================================
@@ -2071,6 +2691,7 @@
     loadCfg();
     renderControls();
     renderEnv();
+    renderTimers();
     connState = CONN_STATE.IDLE;
     updateUIForState();
 
