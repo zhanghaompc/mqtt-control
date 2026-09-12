@@ -1296,13 +1296,13 @@
         <span id="devStatus" class="pill off">设备离线</span>
       </header>
 
-      <div id="connectionNotice" class="connection-notice" role="alert">连接失败，请手动连接并检查设备状态和主题</div>
+      <div id="connectionNotice" class="connection-notice" role="alert">连接失败。公共服务器可能暂时不可用，请在“连接配置”中切换其他 Broker 后重试。</div>
 
       <!-- 连接配置：id="connectDetails"，由 JS 动态控制 open 属性 -->
       <details class="fold" id="connectDetails">
         <summary>连接配置 <span class="chev">▾</span></summary>
         <div class="fold-body">
-          <div class="row"><label>服务器</label><input id="host" placeholder="broker-cn.emqx.io"></div>
+        <div class="row"><label>服务器</label><select id="brokerPreset" onchange="applyBrokerPreset()"><option value="broker-cn.emqx.io">EMQX 公共服务器（默认）</option><option value="broker.hivemq.com">HiveMQ 公共服务器</option><option value="test.mosquitto.org">Mosquitto 测试服务器</option><option value="mqtt.eclipseprojects.io">Eclipse 测试服务器</option><option value="">自定义服务器</option></select><input id="host" placeholder="broker-cn.emqx.io"></div>
           <div class="row"><label>端口</label><input id="port" type="number" placeholder="8084"><label
               style="width:auto">加密</label>
             <div class="switch" id="tlsSwitch" onclick="toggleTls()"></div>
@@ -2002,6 +2002,16 @@
         "ac/esp32/xxxx");
       cfg.devType = $("devType").value;
       localStorage.setItem("mqtt_cfg_web", JSON.stringify(cfg));
+    }
+    function applyBrokerPreset() {
+      const p = $("brokerPreset").value;
+      if (!p) return;
+      $("host").value = p;
+      cfg.host = p;
+      if (p === "broker.hivemq.com") { $("port").value = cfg.tls ? 8884 : 1883; $("path").value = "/mqtt"; }
+      else if (p === "test.mosquitto.org") { $("port").value = cfg.tls ? 8081 : 1883; $("path").value = "/mqtt"; }
+      else if (p === "mqtt.eclipseprojects.io") { $("port").value = cfg.tls ? 443 : 1883; $("path").value = "/mqtt"; }
+      else { $("port").value = cfg.tls ? 8084 : 1883; $("path").value = "/mqtt"; }
     }
 
     function toggleTls() {
