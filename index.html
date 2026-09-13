@@ -916,16 +916,18 @@
     #timerPage .tc-tasks {
       background: var(--card);
       border-radius: 18px;
-      padding: 0 16px;
+      padding: 4px 16px;
       box-shadow: var(--shadow);
       min-height: 60px;
     }
 
     #timerPage .tc-task {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px;
       align-items: center;
-      gap: 8px;
-      padding: 12px 0;
+      gap: 12px;
+      min-height: 82px;
+      padding: 10px 0;
       border-bottom: 1px solid var(--border);
     }
 
@@ -983,7 +985,7 @@
       position: relative;
       cursor: pointer;
       flex: none;
-      margin: 9px 0;
+      margin: 0 0 0 auto;
       transition: background-color .22s var(--ease);
     }
 
@@ -1042,13 +1044,14 @@
     }
 
     #timerPage .tc-refresh {
-      padding: 8px 12px;
+      height: 40px;
+      padding: 0 13px;
       font-size: 13px;
       font-weight: 600;
       color: var(--accent);
       background: var(--accent-soft);
       border-radius: 9px;
-      min-height: 36px;
+      min-width: 72px;
     }
 
     #timerPage .tc-refresh:active {
@@ -1087,8 +1090,8 @@
       max-width: 520px;
       max-height: 88dvh;
       overflow-y: auto;
-      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-      background: var(--card);
+      padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+      background: #f7f7f9;
       border-radius: 22px;
       color: var(--text);
       box-shadow: 0 -8px 40px rgba(0, 0, 0, .18);
@@ -1112,7 +1115,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 6px;
+      margin-bottom: 14px;
+      padding: 0 2px;
     }
 
     #timerPage .tc-sheet-head h3 {
@@ -1121,34 +1125,56 @@
     }
 
     #timerPage .tc-sheet-cancel {
-      padding: 8px 12px;
+      height: 42px;
+      padding: 0 13px;
       font-size: 14px;
       font-weight: 600;
       color: var(--muted);
-      background: transparent;
-      min-height: 40px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    #timerPage .tc-form-group {
+      padding: 6px 14px;
+      margin-bottom: 12px;
+      background: var(--card);
+      border: 1px solid rgba(0, 0, 0, .055);
+      border-radius: 15px;
+    }
+
+    #timerPage .tc-form-group-title {
+      padding: 10px 0 9px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
     }
 
     #timerPage .tc-field {
-      display: flex;
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 11px 0;
-      font-size: 15px;
+      column-gap: 12px;
+      min-height: 56px;
+      padding: 5px 0;
+      font-size: 14px;
       font-weight: 500;
       color: var(--text-2);
       border-bottom: 1px solid var(--border);
     }
 
+    #timerPage .tc-field:last-child {
+      border-bottom: 0;
+    }
+
     #timerPage .tc-field>select,
     #timerPage .tc-field>input {
-      flex: none;
-      width: auto;
-      max-width: 58%;
-      height: auto;
-      min-height: 42px;
-      padding: 8px 12px;
+      width: 100%;
+      max-width: none;
+      height: 46px;
+      min-height: 46px;
+      padding: 0 12px;
       font-size: 15px;
       font-weight: 600;
       background: var(--card-2);
@@ -1164,10 +1190,22 @@
       background-position: right 12px center;
     }
 
+    #timerPage #tcTime {
+      height: 46px;
+      min-height: 46px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+      text-align: left;
+      color: var(--text);
+    }
+
     #timerPage .tc-save {
       width: 100%;
-      margin-top: 18px;
-      padding: 14px;
+      height: 48px;
+      margin-top: 14px;
+      padding: 0 14px;
       border-radius: 14px;
       background: var(--accent);
       color: #fff;
@@ -1183,7 +1221,8 @@
     #timerPage .tc-delete {
       width: 100%;
       margin-top: 8px;
-      padding: 13px;
+      height: 48px;
+      padding: 0 14px;
       border-radius: 14px;
       background: transparent;
       color: var(--err);
@@ -1197,22 +1236,47 @@
       transform: scale(.98);
     }
 
+    @media (max-width: 380px) {
+      #timerPage .tc-sheet {
+        padding-right: 12px;
+        padding-left: 12px;
+      }
+
+      #timerPage .tc-form-group {
+        padding-right: 12px;
+        padding-left: 12px;
+      }
+
+      #timerPage .tc-field {
+        grid-template-columns: 72px minmax(0, 1fr);
+        column-gap: 8px;
+        font-size: 13px;
+      }
+
+      #timerPage .tc-footer {
+        align-items: flex-end;
+      }
+    }
+
     /* ============================================================
        ===== 连接配置（优化版） =====
        ============================================================ */
     #connectDetails .fold-body {
-      padding: 8px 22px 22px;
+      padding: 16px;
+      background: #f7f7f9;
     }
 
     /* --- 分组 --- */
     .cfg-group {
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+      background: var(--card);
+      border: 1px solid rgba(0, 0, 0, .055);
+      border-radius: 15px;
     }
 
     .cfg-group:last-of-type {
-      border-bottom: 0;
-      padding-bottom: 4px;
+      margin-bottom: 0;
     }
 
     .cfg-group-title {
@@ -1221,17 +1285,19 @@
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 14px;
-      padding-left: 2px;
+      margin-bottom: 12px;
+      padding: 0 0 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     /* --- 行 --- */
     .cfg-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
       align-items: center;
-      gap: 12px;
-      min-height: 44px;
-      margin-bottom: 10px;
+      column-gap: 12px;
+      min-height: 46px;
+      margin-bottom: 8px;
     }
 
     .cfg-row:last-child {
@@ -1240,12 +1306,11 @@
 
     /* --- 标签统一宽度、垂直居中 --- */
     .cfg-row>.cfg-label {
-      width: 64px;
-      flex-shrink: 0;
+      width: auto;
       font-size: 14px;
       font-weight: 500;
       color: var(--text-2);
-      line-height: 44px;
+      line-height: 1.3;
       white-space: nowrap;
     }
 
@@ -1256,7 +1321,8 @@
     .cfg-row select {
       flex: 1;
       min-width: 0;
-      height: 44px;
+      width: 100%;
+      height: 46px;
       background: var(--card-2);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -1288,11 +1354,11 @@
 
     /* --- 端口 + 加密 同行 --- */
     .cfg-port-combo {
-      flex: 1;
+      width: 100%;
       min-width: 0;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     .cfg-port-combo input {
@@ -1303,8 +1369,13 @@
     .cfg-port-combo .cfg-tls {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-shrink: 0;
+      height: 46px;
+      padding: 0 10px 0 12px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
     }
 
     .cfg-port-combo .cfg-tls-label {
@@ -1318,13 +1389,12 @@
     .cfg-actions {
       display: flex;
       gap: 10px;
-      margin-top: 20px;
-      padding-top: 4px;
+      margin-top: 14px;
     }
 
     .cfg-actions button {
       flex: 1;
-      height: 46px;
+      height: 48px;
       padding: 0;
       border-radius: 12px;
       font-size: 16px;
@@ -1336,9 +1406,29 @@
 
     /* 小屏微调：标签更窄 */
     @media (max-width: 380px) {
+      #connectDetails .fold-body {
+        padding: 12px;
+      }
+
+      .cfg-group {
+        padding: 14px;
+      }
+
+      .cfg-row {
+        grid-template-columns: 56px minmax(0, 1fr);
+        column-gap: 8px;
+      }
+
       .cfg-row>.cfg-label {
-        width: 56px;
         font-size: 13px;
+      }
+
+      .cfg-port-combo .cfg-tls-label {
+        display: none;
+      }
+
+      .cfg-port-combo .cfg-tls {
+        padding: 0 9px;
       }
     }
 
@@ -1466,7 +1556,7 @@
 
             <div class="cfg-row">
               <label class="cfg-label">地址</label>
-              <input id="host" placeholder="broker-cn.emqx.io">
+              <input id="host" type="text" placeholder="broker-cn.emqx.io">
             </div>
 
             <div class="cfg-row">
@@ -1482,7 +1572,7 @@
 
             <div class="cfg-row">
               <label class="cfg-label">路径</label>
-              <input id="path" placeholder="/mqtt">
+              <input id="path" type="text" placeholder="/mqtt">
             </div>
           </div>
 
@@ -1492,7 +1582,7 @@
 
             <div class="cfg-row">
               <label class="cfg-label">用户名</label>
-              <input id="username" placeholder="留空 = 匿名">
+              <input id="username" type="text" placeholder="留空 = 匿名">
             </div>
 
             <div class="cfg-row">
@@ -1515,7 +1605,7 @@
 
             <div class="cfg-row">
               <label class="cfg-label">主题</label>
-              <input id="topic" list="topicHistory" placeholder="ac/esp32/xxxx">
+              <input id="topic" type="text" list="topicHistory" placeholder="ac/esp32/xxxx">
               <datalist id="topicHistory"></datalist>
             </div>
           </div>
@@ -1686,35 +1776,35 @@
             <button type="button" class="tc-sheet-cancel" onclick="closeTimerSheet()">取消</button>
           </div>
 
-          <label class="tc-field">执行时间
-            <input id="tcTime" type="time" value="08:00" required>
-          </label>
-
-          <label class="tc-field">动作
-            <select id="tcPower" onchange="onSheetPowerChange()">
-              <option value="on">开机</option>
-              <option value="off">关机</option>
-            </select>
-          </label>
-
-          <div class="tc-cooling" id="tcCooling">
-            <label class="tc-field">温度
-              <select id="tcTemp"></select>
+          <div class="tc-form-group">
+            <div class="tc-form-group-title">执行设置</div>
+            <label class="tc-field">执行时间
+              <input id="tcTime" type="time" value="08:00" required>
             </label>
-            <label class="tc-field">运行模式
-              <select id="tcMode"></select>
-            </label>
-            <label class="tc-field">风速
-              <select id="tcSpeed"></select>
+            <label class="tc-field">动作
+              <select id="tcPower" onchange="onSheetPowerChange()">
+                <option value="on">开机</option>
+                <option value="off">关机</option>
+              </select>
             </label>
           </div>
 
-          <label class="tc-field">重复
-            <select id="tcRepeat">
-              <option value="1">每天</option>
-              <option value="0">仅一次</option>
-            </select>
-          </label>
+          <div class="tc-form-group tc-cooling" id="tcCooling">
+            <div class="tc-form-group-title">开机参数</div>
+            <label class="tc-field">温度<select id="tcTemp"></select></label>
+            <label class="tc-field">运行模式<select id="tcMode"></select></label>
+            <label class="tc-field">风速<select id="tcSpeed"></select></label>
+          </div>
+
+          <div class="tc-form-group">
+            <div class="tc-form-group-title">重复规则</div>
+            <label class="tc-field">重复
+              <select id="tcRepeat">
+                <option value="1">每天</option>
+                <option value="0">仅一次</option>
+              </select>
+            </label>
+          </div>
 
           <button type="submit" class="tc-save" id="tcSaveBtn">保存定时</button>
           <button type="button" class="tc-delete" id="tcDeleteBtn" style="display:none"
@@ -2311,7 +2401,10 @@
     }
 
     function checkDevicePresence() {
-      if (!client || !client.connected) return;
+      if (!client || !client.connected) {
+        setDeviceOnline(false);
+        return;
+      }
       const now = Date.now();
       if (lastDeviceHeartbeat && now - lastDeviceHeartbeat > DEVICE_TIMEOUT_MS) { setDeviceOnline(false); }
       if (!lastDeviceHeartbeat && brokerConnectTime && now - brokerConnectTime > DEVICE_TIMEOUT_MS) {
@@ -2474,8 +2567,16 @@
     }
 
     function parseTimerResponse(msg) {
-      if (msg === "wifi_config=ok") { setRecoveryStatus("已进入重新配网模式，请连接设备热点完成配置。", "var(--ok)"); return; }
-      if (msg === "reset=ok") { setRecoveryStatus("已开始恢复出厂设置，设备即将重启。", "var(--ok)"); return; }
+      if (msg === "wifi_config=ok") {
+        setRecoveryStatus("已进入重新配网模式，请连接设备热点完成配置。页面即将刷新。", "var(--ok)");
+        prepareForDeviceRestart();
+        return;
+      }
+      if (msg === "reset=ok") {
+        setRecoveryStatus("已开始恢复出厂设置，设备即将重启。页面即将刷新。", "var(--ok)");
+        prepareForDeviceRestart();
+        return;
+      }
       if (msg.indexOf("timers=") === 0) {
         try {
           timerItems = JSON.parse(msg.substring(7));
@@ -2497,6 +2598,21 @@
       } else if (msg.indexOf("timer_") === 0) {
         timerStatus("操作失败，请重试", "var(--err)");
       }
+    }
+
+    function prepareForDeviceRestart() {
+      setDeviceOnline(false);
+      manualDisconnect = true;
+      reconnectStopped = true;
+      if (client) {
+        try { client.end(true); } catch (e) { }
+        client = null;
+      }
+      connState = CONN_STATE.IDLE;
+      updateUIForState();
+      timerItems = [];
+      renderTimers();
+      setTimeout(function () { window.location.reload(); }, 1200);
     }
 
     function setRecoveryStatus(text, color) {
@@ -2752,6 +2868,7 @@
         client.subscribe(DEVICE_STATUS_TOPIC(), { qos: 0 });
         client.subscribe(DEVICE_OUT_TOPIC(), { qos: 0 });
 
+        setTimeout(function () { send("status"); }, 150);
         setTimeout(syncDeviceTime, 250);
         setTimeout(loadTimers, 450);
         if (pendingUpdateCheck) setTimeout(checkUpdate, 300);
@@ -2780,6 +2897,8 @@
 
       connection.on('close', () => {
         if (client !== connection) return;
+
+        setDeviceOnline(false);
 
         const wasManual = manualDisconnect;
         const wasStopped = reconnectStopped;
@@ -2838,6 +2957,7 @@
         client = null;
       }
 
+      setDeviceOnline(false);
       connState = CONN_STATE.IDLE;
       setConnectingMessage('正在连接 MQTT…', '正在连接服务器，请稍候<br>连接成功后将自动恢复控制');
       updateUIForState();
@@ -2861,6 +2981,26 @@
       if (connState === CONN_STATE.CONNECTED || connState === CONN_STATE.CONNECTING) return;
       connect();
     }
+
+    function refreshDeviceState() {
+      if (client && client.connected) {
+        lastDeviceHeartbeat = 0;
+        brokerConnectTime = Date.now();
+        setDevStatus('检测中…', 'busy');
+        send('status');
+        loadTimers();
+      } else {
+        setDeviceOnline(false);
+        autoConnectIfNeeded();
+      }
+    }
+
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) refreshDeviceState();
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) refreshDeviceState();
+    });
 
     // ============================================================
     //  初始化 UI
