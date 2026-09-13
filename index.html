@@ -1197,6 +1197,151 @@
       transform: scale(.98);
     }
 
+    /* ============================================================
+       ===== 连接配置（优化版） =====
+       ============================================================ */
+    #connectDetails .fold-body {
+      padding: 8px 22px 22px;
+    }
+
+    /* --- 分组 --- */
+    .cfg-group {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cfg-group:last-of-type {
+      border-bottom: 0;
+      padding-bottom: 4px;
+    }
+
+    .cfg-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+      padding-left: 2px;
+    }
+
+    /* --- 行 --- */
+    .cfg-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+      margin-bottom: 10px;
+    }
+
+    .cfg-row:last-child {
+      margin-bottom: 0;
+    }
+
+    /* --- 标签统一宽度、垂直居中 --- */
+    .cfg-row>.cfg-label {
+      width: 64px;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-2);
+      line-height: 44px;
+      white-space: nowrap;
+    }
+
+    /* --- 统一输入控件外观 --- */
+    .cfg-row input[type="text"],
+    .cfg-row input[type="number"],
+    .cfg-row input[type="password"],
+    .cfg-row select {
+      flex: 1;
+      min-width: 0;
+      height: 44px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      padding: 0 14px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color .15s var(--ease), background-color .15s var(--ease);
+    }
+
+    .cfg-row input:focus,
+    .cfg-row select:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+    .cfg-row input::placeholder {
+      color: var(--muted-2);
+    }
+
+    .cfg-row select {
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%238e8e93" stroke-width="2.5"><path d="m6 9 6 6 6-6" /></svg>');
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    /* --- 端口 + 加密 同行 --- */
+    .cfg-port-combo {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cfg-port-combo input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cfg-port-combo .cfg-tls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .cfg-port-combo .cfg-tls-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-2);
+      white-space: nowrap;
+    }
+
+    /* --- 底部操作按钮 --- */
+    .cfg-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 4px;
+    }
+
+    .cfg-actions button {
+      flex: 1;
+      height: 46px;
+      padding: 0;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 小屏微调：标签更窄 */
+    @media (max-width: 380px) {
+      .cfg-row>.cfg-label {
+        width: 56px;
+        font-size: 13px;
+      }
+    }
+
     /* ===== OTA 辅助 ===== */
     #otaConfirm {
       display: none;
@@ -1296,28 +1441,91 @@
         <span id="devStatus" class="pill off">设备离线</span>
       </header>
 
-      <div id="connectionNotice" class="connection-notice" role="alert">连接失败。公共服务器可能暂时不可用，请在“连接配置”中切换其他 Broker 后重试。</div>
+      <div id="connectionNotice" class="connection-notice" role="alert">连接失败。公共服务器可能暂时不可用，请在“连接配置”中切换其他 Broker 后重试。
+      </div>
 
-      <!-- 连接配置：id="connectDetails"，由 JS 动态控制 open 属性 -->
+      <!-- ==================== 连接配置 ==================== -->
       <details class="fold" id="connectDetails">
         <summary>连接配置 <span class="chev">▾</span></summary>
         <div class="fold-body">
-        <div class="row"><label>服务器</label><select id="brokerPreset" onchange="applyBrokerPreset()"><option value="broker-cn.emqx.io">EMQX 公共服务器（默认）</option><option value="broker.hivemq.com">HiveMQ 公共服务器</option><option value="test.mosquitto.org">Mosquitto 测试服务器</option><option value="mqtt.eclipseprojects.io">Eclipse 测试服务器</option><option value="">自定义服务器</option></select><input id="host" placeholder="broker-cn.emqx.io"></div>
-          <div class="row"><label>端口</label><input id="port" type="number" placeholder="8084"><label
-              style="width:auto">加密</label>
-            <div class="switch" id="tlsSwitch" onclick="toggleTls()"></div>
+
+          <!-- ===== 服务器 ===== -->
+          <div class="cfg-group">
+            <div class="cfg-group-title">服务器</div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">预设</label>
+              <select id="brokerPreset" onchange="applyBrokerPreset()">
+                <option value="broker-cn.emqx.io">EMQX 公共服务器（默认）</option>
+                <option value="broker.hivemq.com">HiveMQ 公共服务器</option>
+                <option value="test.mosquitto.org">Mosquitto 测试服务器</option>
+                <option value="mqtt.eclipseprojects.io">Eclipse 测试服务器</option>
+                <option value="">自定义服务器</option>
+              </select>
+            </div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">地址</label>
+              <input id="host" placeholder="broker-cn.emqx.io">
+            </div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">端口</label>
+              <div class="cfg-port-combo">
+                <input id="port" type="number" placeholder="8084">
+                <div class="cfg-tls">
+                  <span class="cfg-tls-label">加密</span>
+                  <div class="switch" id="tlsSwitch" onclick="toggleTls()"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">路径</label>
+              <input id="path" placeholder="/mqtt">
+            </div>
           </div>
-          <div class="row"><label>路径</label><input id="path" placeholder="/mqtt"></div>
-          <div class="row"><label>用户名</label><input id="username" placeholder="留空 = 匿名"></div>
-          <div class="row"><label>密码</label><input id="password" type="password" placeholder="留空 = 匿名"></div>
-          <div class="row"><label>设备类型</label><select id="devType">
-              <option value="esp32">ESP32 空调</option>
-              <option value="esp8266">ESP8266 空调</option>
-            </select></div>
-          <div class="row"><label>主题</label><input id="topic" list="topicHistory" placeholder="ac/esp32/xxxx"><datalist
-              id="topicHistory"></datalist></div>
-          <div class="row"><button id="btnConnect" class="primary" style="flex:1">连接</button><button id="btnDisconnect"
-              class="danger" style="flex:1">断开</button></div>
+
+          <!-- ===== 认证 ===== -->
+          <div class="cfg-group">
+            <div class="cfg-group-title">认证</div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">用户名</label>
+              <input id="username" placeholder="留空 = 匿名">
+            </div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">密码</label>
+              <input id="password" type="password" placeholder="留空 = 匿名">
+            </div>
+          </div>
+
+          <!-- ===== 设备 ===== -->
+          <div class="cfg-group">
+            <div class="cfg-group-title">设备</div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">类型</label>
+              <select id="devType">
+                <option value="esp32">ESP32 空调</option>
+                <option value="esp8266">ESP8266 空调</option>
+              </select>
+            </div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">主题</label>
+              <input id="topic" list="topicHistory" placeholder="ac/esp32/xxxx">
+              <datalist id="topicHistory"></datalist>
+            </div>
+          </div>
+
+          <!-- ===== 操作 ===== -->
+          <div class="cfg-actions">
+            <button id="btnConnect" class="primary">连接</button>
+            <button id="btnDisconnect" class="danger">断开</button>
+          </div>
+
         </div>
       </details>
 
@@ -2003,6 +2211,7 @@
       cfg.devType = $("devType").value;
       localStorage.setItem("mqtt_cfg_web", JSON.stringify(cfg));
     }
+
     function applyBrokerPreset() {
       const p = $("brokerPreset").value;
       if (!p) return;
@@ -2012,6 +2221,7 @@
       else if (p === "test.mosquitto.org") { $("port").value = cfg.tls ? 8081 : 1883; $("path").value = "/mqtt"; }
       else if (p === "mqtt.eclipseprojects.io") { $("port").value = cfg.tls ? 443 : 1883; $("path").value = "/mqtt"; }
       else { $("port").value = cfg.tls ? 8084 : 1883; $("path").value = "/mqtt"; }
+      saveCfg();
     }
 
     function toggleTls() {
