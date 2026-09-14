@@ -1193,10 +1193,11 @@
     #timerPage #tcTime {
       height: 46px;
       min-height: 46px;
-      font-size: 18px;
+      padding: 0 12px;
+      font-size: 15px;
       font-weight: 600;
-      letter-spacing: 0;
-      font-variant-numeric: tabular-nums;
+      font-family: inherit;
+      line-height: normal;
       text-align: left;
       color: var(--text);
     }
@@ -1576,21 +1577,6 @@
             </div>
           </div>
 
-          <!-- ===== 认证 ===== -->
-          <div class="cfg-group">
-            <div class="cfg-group-title">认证</div>
-
-            <div class="cfg-row">
-              <label class="cfg-label">用户名</label>
-              <input id="username" type="text" placeholder="留空 = 匿名">
-            </div>
-
-            <div class="cfg-row">
-              <label class="cfg-label">密码</label>
-              <input id="password" type="password" placeholder="留空 = 匿名">
-            </div>
-          </div>
-
           <!-- ===== 设备 ===== -->
           <div class="cfg-group">
             <div class="cfg-group-title">设备</div>
@@ -1607,6 +1593,21 @@
               <label class="cfg-label">主题</label>
               <input id="topic" type="text" list="topicHistory" placeholder="ac/esp32/xxxx">
               <datalist id="topicHistory"></datalist>
+            </div>
+          </div>
+
+          <!-- ===== 认证 ===== -->
+          <div class="cfg-group">
+            <div class="cfg-group-title">认证</div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">用户名</label>
+              <input id="username" type="text" placeholder="留空 = 匿名">
+            </div>
+
+            <div class="cfg-row">
+              <label class="cfg-label">密码</label>
+              <input id="password" type="password" placeholder="留空 = 匿名">
             </div>
           </div>
 
