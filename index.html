@@ -3073,7 +3073,7 @@
     autoConnectIfNeeded();
   </script>
 <script>
-// ===== 快捷指令/书签直达：URL 带 #cmd=指令 时自动连接并发指令（by Doubao） =====
+// ===== 快捷指令/书签直达：URL 带 #cmd=指令 时自动连接并发指令（by Doubao v4） =====
 (function () {
   var h = location.hash || "";
   if (h.indexOf("#cmd=") !== 0) return;
@@ -3083,7 +3083,6 @@
   var SPEED_CN = ["自动", "低速", "中速", "高速", "最大"];
   var TOGGLE_CN = { turbo: "强劲", swing: "扫风", light: "面板灯", sleep: "睡眠", clean: "自清洁" };
 
-  // 把指令翻译成中文提示
   function cmdLabel(c) {
     if (c === "power=off") return "已关机";
     if (c.indexOf("temp=") === 0) {
@@ -3097,7 +3096,7 @@
       return parts.join(" · ");
     }
     if (TOGGLE_CN[c]) return "已切换：" + TOGGLE_CN[c];
-    if (c === "status") return "已刷新设备状态";
+    if (c === "status") return "已刷新状态";
     if (c.indexOf("timer=add") === 0) return "已添加定时任务";
     if (c.indexOf("timer=") === 0) return "已更新定时任务";
     return "已发送";
@@ -3129,11 +3128,98 @@
     }, showMs);
   }
 
+  // 设备回执：只监听一次，收到 /out 应答交给当前等待者处理
+  function hookAck() {
+    if (!client || client.__ackHooked) return;
+    client.__ackHooked = true;
+    client.on("message", function (topic, payload) {
+      if (topic !== DEVICE_OUT_TOPIC()) return;
+      var msg = payload.toString();
+      if (window.__ackCb) window.__ackCb(msg);
+    });
+  }
+
+  function ackPrefix(c) {
+    return c.indexOf("=") !== -1 ? c.split("=")[0] : c;
+  }
+
+  // 读取页面自己的设备在线状态（与顶部"设备在线/离线"一致）
+  function deviceOnlineState() {
+    var el = document.getElementById("devStatus");
+    if (!el) return null;
+    if (el.className.indexOf("on") !== -1) return true;
+    if (el.className.indexOf("off") !== -1) return false;
+    return null;
+  }
+
+  // 先看设备在不在线，再决定发不发；在线则发送并等待回执
+  function sendAndConfirm(cmdStr) {
+    var base = ackPrefix(cmdStr);
+    var settled = false;
+    var anyOut = false;
+    function finish(text, ok) {
+      if (settled) return;
+      settled = true;
+      window.__ackCb = null;
+      showResult(text, ok);
+    }
+
+    function decide() {
+      var online = deviceOnlineState();
+      if (online === false) {
+        finish("设备离线，指令未发送", false);
+        return;
+      }
+      // 设备在线（或状态未知）：发送并等待 /out 回执
+      window.__ackCb = function (msg) {
+        anyOut = true;
+        if (msg.indexOf(base) === 0 || msg.indexOf("timer") === 0) {
+          finish("已执行：" + cmdLabel(cmdStr), true);
+        }
+      };
+      if (!send(cmdStr)) {
+        finish("发送失败：主题未配置或无效", false);
+        return;
+      }
+      setTimeout(function () {
+        if (settled) return;
+        if (anyOut) {
+          finish("已执行：" + cmdLabel(cmdStr), true);
+        } else {
+          finish("已发送，设备未响应（请重试）", false);
+        }
+      }, 3500);
+    }
+
+    // 还没收到过设备心跳（retained /status 订阅后立即到达）→ 最多等 3 秒再判断
+    var waited = 0;
+    (function poll() {
+      if (typeof lastDeviceHeartbeat !== "undefined" && lastDeviceHeartbeat) {
+        decide();
+        return;
+      }
+      if (waited >= 6) { decide(); return; }
+      waited++;
+      setTimeout(poll, 500);
+    })();
+  }
+
+  // 连接：已有连接对象（含正在连接）绝不打断；没有才新建
+  function tryConnect() {
+    if (client) return;
+    try { connect(); } catch (e) { showResult("连接异常", false); }
+  }
+
   function trySend(tries) {
     if (client && client.connected) {
-      var ok = send(cmd);
-      showResult(ok ? cmdLabel(cmd) : "发送失败：主题未配置或无效", ok);
+      hookAck();
+      sendAndConfirm(cmd);
       return;
+    }
+    if (tries === 30) {
+      // 15 秒还没连上：强制重建一次连接（自愈），避免卡在坏掉的连接对象上
+      if (client) { try { client.end(true); } catch (e) {} client = null; }
+      tryConnect();
     }
     if (tries <= 0) {
       showResult("未连上 MQTT，请检查网络", false);
@@ -3158,17 +3244,8 @@
   }
 
   ensureMqtt(function () {
-    if (typeof connect !== "function") {
-      showResult("页面脚本未加载完成", false);
-      return;
-    }
-    if (!client || !client.connected) {
-      try { connect(); } catch (e) {
-        showResult("连接异常：" + (e && e.message ? e.message : e), false);
-        return;
-      }
-    }
-    trySend(30);
+    tryConnect();
+    trySend(60);
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
   }, 8);
 })();
