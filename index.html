@@ -3072,6 +3072,73 @@
     // 再尝试自动重连（若标志存在）
     autoConnectIfNeeded();
   </script>
+<script>
+// ===== 快捷指令/书签直达：URL 带 #cmd=指令 时自动连接并发指令（by Doubao） =====
+(function () {
+  var h = location.hash || "";
+  if (h.indexOf("#cmd=") !== 0) return;
+  var cmd = decodeURIComponent(h.substring(5));
+
+  function showResult(text, ok) {
+    var d = document.createElement("div");
+    d.style.cssText =
+      "position:fixed;left:16px;right:16px;top:50%;transform:translateY(-50%);z-index:99;" +
+      "background:" + (ok ? "rgba(52,199,89,.95)" : "rgba(255,59,48,.95)") + ";color:#fff;padding:18px 20px;" +
+      "border-radius:16px;font-size:16px;font-weight:600;text-align:center;word-break:break-all;" +
+      "box-shadow:0 10px 36px rgba(0,0,0,.35);";
+    d.textContent = text;
+    document.body.appendChild(d);
+    setTimeout(function () { d.remove(); }, 6000);
+  }
+
+  function trySend(tries) {
+    if (client && client.connected) {
+      var ok = send(cmd);
+      showResult(
+        ok ? "已发送：" + cmd
+           : "发送失败：主题未配置或无效（请先在页面连接配置里填好主题并连接一次）",
+        ok);
+      return;
+    }
+    if (tries <= 0) {
+      showResult("失败：15 秒内未连上 MQTT，请检查网络或服务器配置", false);
+      return;
+    }
+    setTimeout(function () { trySend(tries - 1); }, 500);
+  }
+
+  // MQTT 库兜底：本地 mqtt.min.js 没加载成功时，从 CDN 拉一份
+  function ensureMqtt(cb, tries) {
+    if (typeof mqtt !== "undefined") { cb(); return; }
+    if (tries <= 0) {
+      showResult("失败：MQTT 库加载失败（本地与 CDN 均不可用）", false);
+      return;
+    }
+    if (tries === 8) {
+      var s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js";
+      document.head.appendChild(s);
+    }
+    setTimeout(function () { ensureMqtt(cb, tries - 1); }, 500);
+  }
+
+  ensureMqtt(function () {
+    if (typeof connect !== "function") {
+      showResult("失败：页面脚本未加载完成，请刷新重试", false);
+      return;
+    }
+    if (!client || !client.connected) {
+      try { connect(); } catch (e) {
+        showResult("连接异常：" + (e && e.message ? e.message : e), false);
+        return;
+      }
+    }
+    trySend(30);
+    // 清掉 hash，避免手动刷新时重复发送
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  }, 8);
+})();
+</script>
 </body>
 
 </html>
