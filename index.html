@@ -3079,29 +3079,64 @@
   if (h.indexOf("#cmd=") !== 0) return;
   var cmd = decodeURIComponent(h.substring(5));
 
+  var MODE_CN = ["自动", "制冷", "制热", "除湿", "送风"];
+  var SPEED_CN = ["自动", "低速", "中速", "高速", "最大"];
+  var TOGGLE_CN = { turbo: "强劲", swing: "扫风", light: "面板灯", sleep: "睡眠", clean: "自清洁" };
+
+  // 把指令翻译成中文提示
+  function cmdLabel(c) {
+    if (c === "power=off") return "已关机";
+    if (c.indexOf("temp=") === 0) {
+      var parts = ["已开机"];
+      var m = c.match(/mode=(\d+)/);
+      if (m) parts.push(MODE_CN[+m[1]] || "模式" + m[1]);
+      var t = c.match(/temp=(\d+)/);
+      if (t) parts.push(t[1] + "℃");
+      var s = c.match(/speed=(\d+)/);
+      if (s) parts.push(SPEED_CN[+s[1]] || "风速" + s[1]);
+      return parts.join(" · ");
+    }
+    if (TOGGLE_CN[c]) return "已切换：" + TOGGLE_CN[c];
+    if (c === "status") return "已刷新设备状态";
+    if (c.indexOf("timer=add") === 0) return "已添加定时任务";
+    if (c.indexOf("timer=") === 0) return "已更新定时任务";
+    return "已发送";
+  }
+
+  // 顶部居中气泡：成功 1 秒自动消失；失败保留 3.5 秒方便看原因
   function showResult(text, ok) {
     var d = document.createElement("div");
     d.style.cssText =
-      "position:fixed;left:16px;right:16px;top:50%;transform:translateY(-50%);z-index:99;" +
-      "background:" + (ok ? "rgba(52,199,89,.95)" : "rgba(255,59,48,.95)") + ";color:#fff;padding:18px 20px;" +
-      "border-radius:16px;font-size:16px;font-weight:600;text-align:center;word-break:break-all;" +
-      "box-shadow:0 10px 36px rgba(0,0,0,.35);";
-    d.textContent = text;
+      "position:fixed;top:26px;left:50%;transform:translateX(-50%);z-index:999;" +
+      "background:rgba(28,28,30,.88);color:#fff;padding:9px 18px;border-radius:999px;" +
+      "font-size:14px;font-weight:500;line-height:1.5;white-space:nowrap;max-width:86vw;overflow:hidden;" +
+      "text-overflow:ellipsis;display:flex;align-items:center;gap:7px;" +
+      "box-shadow:0 6px 24px rgba(0,0,0,.28);opacity:0;transition:opacity .25s ease;";
+    var dot = document.createElement("span");
+    dot.style.cssText = "width:8px;height:8px;border-radius:50%;flex:none;background:" +
+      (ok ? "#34c759" : "#ff3b30") + ";";
+    var label = document.createElement("span");
+    label.textContent = text;
+    label.style.cssText = "overflow:hidden;text-overflow:ellipsis;";
+    d.appendChild(dot);
+    d.appendChild(label);
     document.body.appendChild(d);
-    setTimeout(function () { d.remove(); }, 6000);
+    requestAnimationFrame(function () { d.style.opacity = "1"; });
+    var showMs = ok ? 1000 : 3500;
+    setTimeout(function () {
+      d.style.opacity = "0";
+      setTimeout(function () { d.remove(); }, 300);
+    }, showMs);
   }
 
   function trySend(tries) {
     if (client && client.connected) {
       var ok = send(cmd);
-      showResult(
-        ok ? "已发送：" + cmd
-           : "发送失败：主题未配置或无效（请先在页面连接配置里填好主题并连接一次）",
-        ok);
+      showResult(ok ? cmdLabel(cmd) : "发送失败：主题未配置或无效", ok);
       return;
     }
     if (tries <= 0) {
-      showResult("失败：15 秒内未连上 MQTT，请检查网络或服务器配置", false);
+      showResult("未连上 MQTT，请检查网络", false);
       return;
     }
     setTimeout(function () { trySend(tries - 1); }, 500);
@@ -3111,7 +3146,7 @@
   function ensureMqtt(cb, tries) {
     if (typeof mqtt !== "undefined") { cb(); return; }
     if (tries <= 0) {
-      showResult("失败：MQTT 库加载失败（本地与 CDN 均不可用）", false);
+      showResult("MQTT 库加载失败", false);
       return;
     }
     if (tries === 8) {
@@ -3124,7 +3159,7 @@
 
   ensureMqtt(function () {
     if (typeof connect !== "function") {
-      showResult("失败：页面脚本未加载完成，请刷新重试", false);
+      showResult("页面脚本未加载完成", false);
       return;
     }
     if (!client || !client.connected) {
@@ -3134,7 +3169,6 @@
       }
     }
     trySend(30);
-    // 清掉 hash，避免手动刷新时重复发送
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
   }, 8);
 })();
