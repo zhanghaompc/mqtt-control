@@ -1852,6 +1852,36 @@
     const MAX_RECONNECT_ATTEMPTS = 4;
     let reconnectStopped = false;
 
+    // ============================================================
+    //  过时状态抑制：用户刚下发过 temp= 命令时，设备周期发布的
+    //  /status 可能还携带旧值（IR 发射有 180ms 防抖，ac.next 更新滞后）。
+    //  在确认窗口内只接受与本次命令一致的状态，旧值直接忽略，避免闪烁。
+    // ============================================================
+    let pendingCmd = null;               // { temp, mode, speed, power, at }
+    const CMD_ACK_WINDOW_MS = 4000;      // 确认窗口 4 秒
+
+    // 下发 temp= 系列命令前调用：记录期望状态
+    function markPending() {
+      pendingCmd = { temp: temp, mode: modeIndex, speed: speedIndex, power: true, at: Date.now() };
+    }
+
+    // 是否仍在确认窗口内（过期自动清除，恢复正常跟随）
+    function freshPending() {
+      if (!pendingCmd) return false;
+      if (Date.now() - pendingCmd.at >= CMD_ACK_WINDOW_MS) {
+        pendingCmd = null;
+        return false;
+      }
+      return true;
+    }
+
+    // 窗口内：回传值必须与期望一致才接受，否则视为过时旧值
+    function guardPending(key, val) {
+      if (!freshPending()) return true;
+      if (pendingCmd[key] === undefined) return true;
+      return val === pendingCmd[key];
+    }
+
     const $ = id => document.getElementById(id);
     const DEVICE_STATUS_TOPIC = () => cfg.topic + "/status";
     const DEVICE_OUT_TOPIC = () => cfg.topic + "/out";
@@ -2477,11 +2507,11 @@
       if (msg.indexOf("{") === 0) {
         try {
           const j = JSON.parse(msg);
-          if (j.degrees !== undefined) temp = Math.round(j.degrees);
-          if (j.temp !== undefined && j.degrees === undefined) temp = Math.round(j.temp);
-          if (j.power !== undefined) powerOn = !!j.power;
-          if (j.mode >= 0 && j.mode < MODES.length) modeIndex = j.mode;
-          if (j.speed >= 0 && j.speed < SPEEDS.length) speedIndex = j.speed;
+          if (j.degrees !== undefined && guardPending("temp", Math.round(j.degrees))) temp = Math.round(j.degrees);
+          if (j.temp !== undefined && j.degrees === undefined && guardPending("temp", Math.round(j.temp))) temp = Math.round(j.temp);
+          if (j.power !== undefined && guardPending("power", !!j.power)) powerOn = !!j.power;
+          if (j.mode >= 0 && j.mode < MODES.length && guardPending("mode", j.mode)) modeIndex = j.mode;
+          if (j.speed >= 0 && j.speed < SPEEDS.length && guardPending("speed", j.speed)) speedIndex = j.speed;
           if (j.protocol) protocolName = j.protocol;
           curTemp = j.temp !== undefined ? Number(j.temp).toFixed(1) : "--";
           curHumidity = j.humidity !== undefined ? Number(j.humidity).toFixed(1) : "--";
@@ -2502,13 +2532,13 @@
         } catch (e) { }
       } else if (msg.indexOf("temp=") === 0) {
         const t = msg.match(/temp=([\d.]+)/);
-        if (t) temp = parseInt(t[1]);
+        if (t && guardPending("temp", parseInt(t[1]))) temp = parseInt(t[1]);
         const m = msg.match(/mode=(\d+)/);
-        if (m && parseInt(m[1]) < MODES.length) modeIndex = parseInt(m[1]);
+        if (m && parseInt(m[1]) < MODES.length && guardPending("mode", parseInt(m[1]))) modeIndex = parseInt(m[1]);
         const s = msg.match(/speed=(\d+)/);
-        if (s && parseInt(s[1]) < SPEEDS.length) speedIndex = parseInt(s[1]);
+        if (s && parseInt(s[1]) < SPEEDS.length && guardPending("speed", parseInt(s[1]))) speedIndex = parseInt(s[1]);
         const p = msg.match(/power=(on|off)/);
-        if (p) powerOn = p[1] === "on";
+        if (p && guardPending("power", p[1] === "on")) powerOn = p[1] === "on";
         renderControls();
       } else if (msg.indexOf("protocol=") === 0) {
         protocolName = msg.substring(9);
@@ -2764,13 +2794,19 @@
     function togglePower() {
       powerOn = !powerOn;
       renderControls();
-      send(powerOn ? "temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on" :
-        "power=off");
+      if (powerOn) {
+        markPending();
+        send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on");
+      } else {
+        pendingCmd = null;
+        send("power=off");
+      }
     }
 
     function tempStep(d) {
       temp = Math.min(30, Math.max(16, temp + d));
       renderControls();
+      markPending();
       send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on");
     }
 
@@ -2797,6 +2833,7 @@
         input.remove();
         tempSpan.style.display = "inline";
         renderControls();
+        markPending();
         send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + speedIndex + ";power=on");
       }
       input.onblur = finishEdit;
@@ -3012,6 +3049,7 @@
       b.onclick = () => {
         modeIndex = i;
         renderControls();
+        markPending();
         send("temp=" + temp + ";mode=" + i + ";speed=" + speedIndex + ";power=on");
       };
       b.className = "control-action";
@@ -3023,6 +3061,7 @@
       b.onclick = () => {
         speedIndex = i;
         renderControls();
+        markPending();
         send("temp=" + temp + ";mode=" + modeIndex + ";speed=" + i + ";power=on");
       };
       b.className = "control-action";
